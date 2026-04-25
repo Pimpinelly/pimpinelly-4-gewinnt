@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pimpinellys Jahrmarkt-4-Gewinnt</title>
+    <title>Pimpinellys 4-Gewinnt</title>
     <style>
         body { 
             font-family: 'Arial', sans-serif; 
@@ -17,24 +17,19 @@
 
         img { width: 100px; height: auto; margin: 5px auto; display: block; border-radius: 10px; }
         
-        /* Die Jahrmarkt-Lämpchen */
+        h1 { color: #ff4081; text-shadow: 2px 2px #fff; margin: 5px 0; font-size: 1.5rem; }
+
         .lights-container {
             display: inline-block;
             padding: 15px;
-            background: #222; /* Dunkler Rahmen für die Lichter */
+            background: #222; 
             border-radius: 20px;
             border: 8px solid #444;
             box-shadow: 0 0 20px rgba(0,0,0,0.5);
             position: relative;
-            animation: borderGlow 2s infinite alternate;
+            margin-top: 10px;
         }
 
-        @keyframes borderGlow {
-            from { box-shadow: 0 0 10px #ff4081; }
-            to { box-shadow: 0 0 25px #ffeb3b; }
-        }
-
-        /* Einzelne blinkende Lämpchen */
         .light {
             position: absolute;
             width: 8px;
@@ -53,7 +48,7 @@
             width: 85vw; 
             max-width: 340px; 
             position: relative;
-            overflow: hidden; /* Damit Steine "hinter" dem Rahmen verschwinden */
+            overflow: hidden; 
         }
 
         .cell { 
@@ -66,7 +61,6 @@
             z-index: 2;
         }
 
-        /* Die Animation für fallende Steine */
         .stone {
             position: absolute;
             width: 90%;
@@ -86,7 +80,6 @@
         .player-stone { background: orange; box-shadow: inset 0 0 8px rgba(0,0,0,0.4); }
         .computer-stone { background: blue; box-shadow: inset 0 0 8px rgba(0,0,0,0.4); }
 
-        /* Blinkeffekt bei Sieg */
         .win-blink { animation: blink 0.3s infinite; }
         @keyframes blink {
             0% { opacity: 1; }
@@ -94,41 +87,41 @@
             100% { opacity: 1; }
         }
 
-        #status { font-size: 1.2rem; margin: 10px 0; font-weight: bold; }
+        #score-display { font-size: 1.1rem; font-weight: bold; margin-bottom: 5px; }
+        #status { font-size: 1.2rem; margin: 15px 0; font-weight: bold; min-height: 1.5em; }
         
         button { 
-            padding: 12px 24px; 
-            font-size: 1rem; 
+            padding: 12px 30px; 
+            font-size: 1.1rem; 
             background-color: #ff4081; 
             color: white; 
             border: none; 
             border-radius: 50px; 
             cursor: pointer; 
-            margin: 10px 0;
+            box-shadow: 0 4px 10px rgba(255, 64, 129, 0.4);
         }
     </style>
 </head>
 <body>
-<body>
 
     <img src="logo.png" alt="Logo">
-    
-    <h1 style="color: #ff4081; text-shadow: 2px 2px #fff;">Pimpinellys 4-Gewinnt</h1>
-    
-    <div id="score-display">Pimpinelly: 0 | Computer: 0
+    <h1>Pimpinellys 4-Gewinnt</h1>
+    <div id="score-display">Pimpinelly: 0 | Computer: 0</div>
+
+    <div class="lights-container" id="outer-frame">
+        <div class="board" id="board"></div>
     </div>
     
-    <h2 id="status">Bereit zum Zocken?</h2>
+    <h2 id="status">Bereit?</h2>
     <button onclick="resetGame()">Neues Spiel</button>
 
     <script>
-const ROWS = 6;
+        const ROWS = 6;
         const COLUMNS = 7;
         let board = [];
         let gameActive = true;
         let scores = { player: 0, computer: 0 };
 
-        // Der künstliche Klick-Sound (optimiert auf einen kurzen, sauberen Ton)
         function playClick() {
             try {
                 const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -143,7 +136,7 @@ const ROWS = 6;
                 gain.connect(ctx.destination);
                 osc.start();
                 osc.stop(ctx.currentTime + 0.1);
-            } catch(e) { console.log("Audio-Fehler"); }
+            } catch(e) {}
         }
 
         function initGame() {
@@ -162,8 +155,8 @@ const ROWS = 6;
             for(let i=0; i<20; i++) {
                 const l = document.createElement('div');
                 l.className = 'light';
-                l.style.top = (i < 10) ? '-10px' : '100%';
-                l.style.left = (i % 10) * 11 + '%';
+                if(i < 10) { l.style.top = '-10px'; l.style.left = (i * 11) + '%'; }
+                else { l.style.bottom = '-10px'; l.style.left = ((i-10) * 11) + '%'; }
                 l.style.background = colors[i % colors.length];
                 l.style.boxShadow = `0 0 8px ${l.style.background}`;
                 l.style.animation = `blink ${0.5 + Math.random()}s infinite`;
@@ -189,14 +182,14 @@ const ROWS = 6;
             if (!gameActive) return;
             let r = getLowestEmptyRow(c);
             if (r !== -1) {
-                gameActive = false; // Verhindert Mehrfach-Klicks während der Stein fällt
+                gameActive = false;
                 placeStone(r, c, 1);
                 if (checkWin(r, c)) {
                     scores.player++;
                     setTimeout(() => {
                         try { new Audio('tusch.mp3').play(); } catch(e) {}
                         endGame("Sieg für Pimpinelly! 🤡🎺");
-                    }, 500); // Tusch erst, wenn der Stein unten angekommen ist
+                    }, 500);
                 } else {
                     setTimeout(makeMove, 700);
                 }
@@ -209,7 +202,7 @@ const ROWS = 6;
             const stone = document.createElement('div');
             stone.className = `stone ${p === 1 ? 'player-stone' : 'computer-stone'}`;
             cell.appendChild(stone);
-            playClick(); // Sound wird hier GENAU EINMAL beim Erstellen des Steins gerufen
+            playClick();
         }
 
         function makeMove() {
@@ -226,9 +219,7 @@ const ROWS = 6;
             placeStone(r, move, 2);
             if (checkWin(r, move)) {
                 scores.computer++;
-                setTimeout(() => {
-                    endGame("Computer gewinnt! 🤖");
-                }, 500);
+                setTimeout(() => endGame("Computer gewinnt! 🤖"), 500);
             } else {
                 gameActive = true;
                 document.getElementById('status').innerText = "Du bist dran!";
