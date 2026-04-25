@@ -96,78 +96,57 @@
         }
 
         function makeMove() {
-    if (!gameActive) return;
+            if (!gameActive) return;
+            let bestScore = -Infinity;
+            let move = 0;
 
-    let bestScore = -Infinity;
-    let move = 0;
+            for (let c = 0; c < COLUMNS; c++) {
+                let r = getLowestEmptyRow(c);
+                if (r !== -1) {
+                    let score = evaluateMove(r, c);
+                    
+                    // Simulation: Verhindere, dass der Computer dem Spieler eine Vorlage gibt
+                    board[r][c] = 2; 
+                    let nextRow = getLowestEmptyRow(c);
+                    if (nextRow !== -1) {
+                        board[nextRow][c] = 1;
+                        if (checkWin(nextRow, c)) score -= 150;
+                        board[nextRow][c] = 0;
+                    }
+                    board[r][c] = 0;
 
-    for (let c = 0; c < COLUMNS; c++) {
-        let r = getLowestEmptyRow(c);
-        if (r !== -1) {
-            let score = evaluateMove(r, c);
-            
-            // Simulation: Was passiert nach meinem Zug?
-            board[r][c] = 2; 
-            let nextRow = getLowestEmptyRow(c);
-            if (nextRow !== -1) {
-                board[nextRow][c] = 1; // Was, wenn der Spieler daraufhin hier gewinnt?
-                if (checkWin(nextRow, c)) score -= 150; // Strafe: Gib dem Spieler keine Vorlage!
-                board[nextRow][c] = 0;
-            }
-            board[r][c] = 0;
-
-            if (score > bestScore) {
-                bestScore = score;
-                move = c;
-            } else if (score === bestScore) {
-                if (Math.random() > 0.5) move = c;
-            }
-        }
-    }
-
-    let finalRow = getLowestEmptyRow(move);
-    placeStone(finalRow, move, 2);
-    if (checkWin(finalRow, move)) {
-        document.getElementById('status').innerText = "Computer gewinnt! 🤖";
-        gameActive = false;
-    } else {
-        document.getElementById('status').innerText = "Du bist dran (Orange)!";
-    }
-}
-
-function evaluateMove(r, c) {
-    let score = 0;
-    
-    // 1. Eigener Sieg ist das Wichtigste
-    board[r][c] = 2;
-    if (checkWin(r, c)) score += 1000;
-    
-    // 2. Gegner blocken
-    board[r][c] = 1;
-    if (checkWin(r, c)) score += 200;
-    
-    // 3. Zentrumskontrolle (Spalten 2, 3, 4 sind wertvoller)
-    if (c === 3) score += 10;
-    if (c === 2 || c === 4) score += 5;
-
-    board[r][c] = 0;
-    return score;
-}
-
-            if (move === -1) {
-                let available = [];
-                for(let c=0; c<COLUMNS; c++) if(board[0][c] === 0) available.push(c);
-                move = available[Math.floor(Math.random() * available.length)];
+                    if (score > bestScore) {
+                        bestScore = score;
+                        move = c;
+                    } else if (score === bestScore && Math.random() > 0.5) {
+                        move = c;
+                    }
+                }
             }
 
-            let r = getLowestEmptyRow(move);
-            placeStone(r, move, 2);
-            if (checkWin(r, move)) {
-                document.getElementById('status').innerText = "Der Computer hat gewonnen! 🤖";
+            let finalRow = getLowestEmptyRow(move);
+            placeStone(finalRow, move, 2);
+            if (checkWin(finalRow, move)) {
+                document.getElementById('status').innerText = "Computer gewinnt! 🤖";
                 gameActive = false;
             } else {
                 document.getElementById('status').innerText = "Du bist dran (Orange)!";
             }
+        }
+
+        function evaluateMove(r, c) {
+            let score = 0;
+            board[r][c] = 2; // Eigener Sieg?
+            if (checkWin(r, c)) score += 1000;
+            board[r][c] = 1; // Blocken?
+            if (checkWin(r, c)) score += 200;
+            
+            // Strategie: Mitte ist wertvoller
+            if (c === 3) score += 10;
+            if (c === 2 || c === 4) score += 5;
+
+            board[r][c] = 0;
+            return score;
         }
 
         function getLowestEmptyRow(c) {
@@ -203,9 +182,7 @@ function evaluateMove(r, c) {
             return false;
         }
 
-        function resetGame() {
-            initGame();
-        }
+        function resetGame() { initGame(); }
 
         initGame();
     </script>
