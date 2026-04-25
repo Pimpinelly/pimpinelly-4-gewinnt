@@ -100,17 +100,20 @@
             let bestScore = -Infinity;
             let move = 0;
 
+            // Alle Spalten prüfen
             for (let c = 0; c < COLUMNS; c++) {
                 let r = getLowestEmptyRow(c);
                 if (r !== -1) {
                     let score = evaluateMove(r, c);
                     
-                    // Simulation: Verhindere, dass der Computer dem Spieler eine Vorlage gibt
+                    // VORAUSSCHAU: Verhindere, dass der Computer dir einen Sieg "auflegt"
                     board[r][c] = 2; 
                     let nextRow = getLowestEmptyRow(c);
                     if (nextRow !== -1) {
                         board[nextRow][c] = 1;
-                        if (checkWin(nextRow, c)) score -= 150;
+                        if (checkWin(nextRow, c)) {
+                            score -= 500; // Riesige Strafe, wenn dieser Zug dir zum Sieg verhilft
+                        }
                         board[nextRow][c] = 0;
                     }
                     board[r][c] = 0;
@@ -118,8 +121,8 @@
                     if (score > bestScore) {
                         bestScore = score;
                         move = c;
-                    } else if (score === bestScore && Math.random() > 0.5) {
-                        move = c;
+                    } else if (score === bestScore) {
+                        if (Math.random() > 0.5) move = c;
                     }
                 }
             }
@@ -136,16 +139,30 @@
 
         function evaluateMove(r, c) {
             let score = 0;
-            board[r][c] = 2; // Eigener Sieg?
-            if (checkWin(r, c)) score += 1000;
-            board[r][c] = 1; // Blocken?
-            if (checkWin(r, c)) score += 200;
             
-            // Strategie: Mitte ist wertvoller
-            if (c === 3) score += 10;
-            if (c === 2 || c === 4) score += 5;
-
+            // 1. Kann der Computer JETZT gewinnen?
+            board[r][c] = 2;
+            if (checkWin(r, c)) {
+                board[r][c] = 0;
+                return 2000; // Sofort zuschlagen!
+            }
             board[r][c] = 0;
+
+            // 2. Muss der Computer dich JETZT blocken? (Egal wo auf dem Feld!)
+            board[r][c] = 1;
+            if (checkWin(r, c)) {
+                board[r][c] = 0;
+                return 1000; // Absolute Priorität: Blocken!
+            }
+            board[r][c] = 0;
+            
+            // 3. Strategische Punkte
+            if (c === 3) score += 20; // Mitte ist Gold wert
+            if (c === 2 || c === 4) score += 10; // Flanken der Mitte
+            
+            // Bonus für "fast fertige" Reihen (2 oder 3 Steine)
+            // (Hier könnte man noch mehr Logik einbauen, aber Blocken ist erst mal wichtiger)
+
             return score;
         }
 
