@@ -191,7 +191,7 @@
                         endGame("Sieg für Pimpinelly! 🤡🎺");
                     }, 500);
                 } else {
-                    setTimeout(makeMove, 700);
+                    setTimeout(makeMove, 600);
                 }
             }
         }
@@ -213,6 +213,7 @@
                 if (r !== -1) {
                     let score = evaluatePosition(r, c);
                     if (score > bestScore) { bestScore = score; move = c; }
+                    else if (score === bestScore && Math.random() > 0.5) { move = c; }
                 }
             }
             let r = getLowestEmptyRow(move);
@@ -227,9 +228,41 @@
         }
 
         function evaluatePosition(r, c) {
-            board[r][c] = 2; if (checkWin(r, c)) { board[r][c] = 0; return 1000; }
-            board[r][c] = 1; if (checkWin(r, c)) { board[r][c] = 0; return 500; }
-            board[r][c] = 0; return (3 - Math.abs(3 - c));
+            let score = 0;
+
+            // 1. Sofortiger Sieg (KI)
+            board[r][c] = 2;
+            if (checkWin(r, c)) { board[r][c] = 0; return 100000; }
+            
+            // 2. Muss Gegner (Spieler) blocken?
+            board[r][c] = 1;
+            if (checkWin(r, c)) { board[r][c] = 0; return 50000; }
+            board[r][c] = 0;
+
+            // 3. Boden-Spezial-Logik: Horizontale Gefahr erkennen
+            if (r === 5) { // Wir sind in der untersten Reihe
+                let horizontalChain = 0;
+                // Prüfe links und rechts wie viele Steine du da schon hast
+                for(let i = -2; i <= 2; i++) {
+                    let nc = c + i;
+                    if(nc >= 0 && nc < COLUMNS && board[5][nc] === 1) horizontalChain++;
+                }
+                score += horizontalChain * 200; // Massiver Bonus für das Blocken am Boden
+            }
+
+            // 4. Verhindere "Fallen" (nicht direkt auf deinen Stein setzen, wenn du dann gewinnst)
+            board[r][c] = 2;
+            let nextR = getLowestEmptyRow(c);
+            if (nextR !== -1) {
+                board[nextR][c] = 1;
+                if (checkWin(nextR, c)) score -= 10000; 
+                board[nextR][c] = 0;
+            }
+            board[r][c] = 0;
+
+            // 5. Mitte-Bonus
+            score += (3 - Math.abs(3 - c)) * 10;
+            return score;
         }
 
         function endGame(text) {
