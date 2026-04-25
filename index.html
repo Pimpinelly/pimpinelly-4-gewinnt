@@ -180,6 +180,13 @@
 
         function playerMove(c) {
             if (!gameActive) return;
+            
+            // TRICK FÜR HANDYS: Den Tusch kurz "anpielen" (lautlos), 
+            // damit das Handy den Kanal für später freigibt.
+            const silentTusch = new Audio('tusch.mp3');
+            silentTusch.volume = 0;
+            silentTusch.play().catch(() => {}); 
+
             let r = getLowestEmptyRow(c);
             if (r !== -1) {
                 gameActive = false;
@@ -187,7 +194,10 @@
                 if (checkWin(r, c)) {
                     scores.player++;
                     setTimeout(() => {
-                        try { new Audio('tusch.mp3').play(); } catch(e) {}
+                        // Jetzt darf der Tusch klingen!
+                        const tusch = new Audio('tusch.mp3');
+                        tusch.volume = 1.0;
+                        tusch.play().catch(e => console.log("Handy blockiert noch:", e));
                         endGame("Sieg für Pimpinelly! 🤡🎺");
                     }, 500);
                 } else {
