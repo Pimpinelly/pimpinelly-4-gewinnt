@@ -53,7 +53,7 @@
     <button onclick="resetGame()">Spiel neu starten</button>
 
     <script>
-        const ROWS = 6;
+       const ROWS = 6;
         const COLUMNS = 7;
         let board = [];
         let gameActive = true;
@@ -98,23 +98,20 @@
         function makeMove() {
             if (!gameActive) return;
             let bestScore = -Infinity;
-            let move = 0;
+            let move = 3; // Standardmäßig Mitte
 
-            // Alle Spalten prüfen
             for (let c = 0; c < COLUMNS; c++) {
                 let r = getLowestEmptyRow(c);
                 if (r !== -1) {
-                    let score = evaluateMove(r, c);
+                    let score = evaluatePosition(r, c);
                     
-                    // VORAUSSCHAU: Verhindere, dass der Computer dir einen Sieg "auflegt"
-                    board[r][c] = 2; 
-                    let nextRow = getLowestEmptyRow(c);
-                    if (nextRow !== -1) {
-                        board[nextRow][c] = 1;
-                        if (checkWin(nextRow, c)) {
-                            score -= 500; // Riesige Strafe, wenn dieser Zug dir zum Sieg verhilft
-                        }
-                        board[nextRow][c] = 0;
+                    // Verhindere, dass der Computer einen Sieg "hochhebt"
+                    board[r][c] = 2;
+                    let nextR = getLowestEmptyRow(c);
+                    if (nextR !== -1) {
+                        board[nextR][c] = 1;
+                        if (checkWin(nextR, c)) score -= 400; 
+                        board[nextR][c] = 0;
                     }
                     board[r][c] = 0;
 
@@ -137,33 +134,44 @@
             }
         }
 
-        function evaluateMove(r, c) {
+        function evaluatePosition(r, c) {
             let score = 0;
-            
-            // 1. Kann der Computer JETZT gewinnen?
+
+            // 1. Sofortiger Sieg?
             board[r][c] = 2;
-            if (checkWin(r, c)) {
-                board[r][c] = 0;
-                return 2000; // Sofort zuschlagen!
-            }
+            if (checkWin(r, c)) { board[r][c] = 0; return 10000; }
+            
+            // 2. Muss Gegner blocken?
+            board[r][c] = 1;
+            if (checkWin(r, c)) { board[r][c] = 0; return 5000; }
             board[r][c] = 0;
 
-            // 2. Muss der Computer dich JETZT blocken? (Egal wo auf dem Feld!)
-            board[r][c] = 1;
-            if (checkWin(r, c)) {
-                board[r][c] = 0;
-                return 1000; // Absolute Priorität: Blocken!
-            }
-            board[r][c] = 0;
-            
-            // 3. Strategische Punkte
-            if (c === 3) score += 20; // Mitte ist Gold wert
-            if (c === 2 || c === 4) score += 10; // Flanken der Mitte
-            
-            // Bonus für "fast fertige" Reihen (2 oder 3 Steine)
-            // (Hier könnte man noch mehr Logik einbauen, aber Blocken ist erst mal wichtiger)
+            // 3. Strategische Bewertung (Nähe zur Mitte)
+            score += (3 - Math.abs(3 - c)) * 10;
+
+            // 4. "Zukunft" scannen: Wie viele 2er/3er Reihen entstehen?
+            score += countPotential(r, c, 2) * 20; // Eigene Chancen
+            score += countPotential(r, c, 1) * 15; // Gegnerische Ansätze im Keim ersticken
 
             return score;
+        }
+
+        function countPotential(r, c, p) {
+            let totalPotential = 0;
+            const directions = [[0,1], [1,0], [1,1], [1,-1]];
+            
+            for (let [dr, dc] of directions) {
+                let line = 0;
+                for (let i = -3; i <= 3; i++) {
+                    let nr = r + i*dr, nc = c + i*dc;
+                    if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLUMNS) {
+                        if (board[nr][nc] === p || (nr === r && nc === c)) line++;
+                        else if (board[nr][nc] !== 0) line = 0; // Blockiert durch anderen Spieler
+                    }
+                }
+                if (line >= 4) totalPotential++;
+            }
+            return totalPotential;
         }
 
         function getLowestEmptyRow(c) {
@@ -200,8 +208,7 @@
         }
 
         function resetGame() { initGame(); }
-
-        initGame();
+        initGame(); 
     </script>
 </body>
 </html>
