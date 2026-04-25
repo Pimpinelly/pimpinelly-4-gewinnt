@@ -5,41 +5,79 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pimpinelly 4 Gewinnt</title>
     <style>
-        body { font-family: 'Arial', sans-serif; text-align: center; background-color: #fce4ec; color: #333; }
+    <style>
+        body { 
+            font-family: 'Arial', sans-serif; 
+            text-align: center; 
+            background-color: #fce4ec; 
+            color: #333; 
+            margin: 0; 
+            padding: 10px; 
+            /* Verhindert sinnloses Zoomen auf dem Handy */
+            touch-action: manipulation; 
+        }
+
+        h1 { font-size: 1.5rem; margin: 10px 0; }
+
         .board { 
             display: grid; 
-            grid-template-columns: repeat(7, 50px); 
-            grid-gap: 8px; 
+            grid-template-columns: repeat(7, 1fr); /* Nutzt den verfügbaren Platz gleichmäßig */
+            grid-gap: 5px; 
             justify-content: center; 
             background-color: #007bff; 
-            padding: 15px; 
+            padding: 10px; 
             border-radius: 15px; 
-            margin: 20px auto; 
-            width: fit-content;
+            margin: 10px auto; 
+            /* Das Spielfeld passt sich der Breite an, wird aber nie breiter als 400px */
+            width: 95vw; 
+            max-width: 400px; 
             box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            box-sizing: border-box;
         }
+
         .cell { 
-            width: 50px; 
-            height: 50px; 
+            /* Das Seitenverhältnis bleibt 1:1 (ein Kreis) */
+            aspect-ratio: 1 / 1; 
             background-color: white; 
             border-radius: 50%; 
             cursor: pointer; 
-            border: 2px solid #0056b3;
+            border: 1px solid #0056b3;
         }
-        .cell.player { background-color: orange; box-shadow: inset 0 0 10px rgba(0,0,0,0.3); }
-        .cell.computer { background-color: blue; box-shadow: inset 0 0 10px rgba(0,0,0,0.3); }
-        img { width: 180px; margin-top: 20px; border-radius: 10px; }
+
+        .cell.player { background-color: orange; box-shadow: inset 0 0 8px rgba(0,0,0,0.3); }
+        .cell.computer { background-color: blue; box-shadow: inset 0 0 8px rgba(0,0,0,0.3); }
+
+        img { 
+            max-width: 120px; 
+            height: auto; 
+            margin-top: 10px; 
+            border-radius: 10px; 
+        }
+
         button { 
-            padding: 10px 20px; 
-            font-size: 16px; 
+            padding: 12px 24px; 
+            font-size: 1rem; 
             background-color: #ff4081; 
             color: white; 
             border: none; 
-            border-radius: 5px; 
+            border-radius: 8px; 
             cursor: pointer; 
             margin-top: 10px;
+            width: 80%;
+            max-width: 250px;
         }
-        button:hover { background-color: #f50057; }
+
+        #score-display {
+            font-size: 1.2rem;
+            margin: 10px 0;
+        }
+
+        /* Speziell für sehr kleine Handys */
+        @media (max-width: 350px) {
+            .board { grid-gap: 3px; padding: 5px; }
+            h1 { font-size: 1.2rem; }
+        }
+    </style>
     </style>
 </head>
 <body>
