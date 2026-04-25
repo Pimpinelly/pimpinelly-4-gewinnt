@@ -1,300 +1,180 @@
 <!DOCTYPE html>
-<html>
+<html lang="de">
 <head>
-	<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
-	<title></title>
-	<meta name="generator" content="LibreOffice 25.8.3.2 (MacOSX)"/>
-	<meta name="created" content="2026-04-25T17:58:19.754983000"/>
-	<meta name="changed" content="2026-04-25T19:24:04.596726000"/>
-	<style type="text/css">
-		@page { size: 21cm 29.7cm; margin: 2cm }
-		p { margin-bottom: 0.25cm; line-height: 115%; background: transparent }
-	</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pimpinelly 4 Gewinnt</title>
+    <style>
+        body { font-family: 'Arial', sans-serif; text-align: center; background-color: #fce4ec; color: #333; }
+        .board { 
+            display: grid; 
+            grid-template-columns: repeat(7, 50px); 
+            grid-gap: 8px; 
+            justify-content: center; 
+            background-color: #007bff; 
+            padding: 15px; 
+            border-radius: 15px; 
+            margin: 20px auto; 
+            width: fit-content;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        .cell { 
+            width: 50px; 
+            height: 50px; 
+            background-color: white; 
+            border-radius: 50%; 
+            cursor: pointer; 
+            border: 2px solid #0056b3;
+        }
+        .cell.player { background-color: orange; box-shadow: inset 0 0 10px rgba(0,0,0,0.3); }
+        .cell.computer { background-color: blue; box-shadow: inset 0 0 10px rgba(0,0,0,0.3); }
+        img { width: 180px; margin-top: 20px; border-radius: 10px; }
+        button { 
+            padding: 10px 20px; 
+            font-size: 16px; 
+            background-color: #ff4081; 
+            color: white; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            margin-top: 10px;
+        }
+        button:hover { background-color: #f50057; }
+    </style>
 </head>
-<body lang="de-CH" link="#000080" vlink="#800000" dir="ltr"><p style="line-height: 100%; margin-bottom: 0cm">
-&lt;!DOCTYPE html&gt;</p>
-<p style="line-height: 100%; margin-bottom: 0cm">&lt;html lang=&quot;de&quot;&gt;</p>
-<p style="line-height: 100%; margin-bottom: 0cm">&lt;head&gt;</p>
-<p style="line-height: 100%; margin-bottom: 0cm">    &lt;meta
-charset=&quot;UTF-8&quot;&gt;</p>
-<p style="line-height: 100%; margin-bottom: 0cm">    &lt;meta
-name=&quot;viewport&quot; content=&quot;width=device-width,
-initial-scale=1.0&quot;&gt;</p>
-<p style="line-height: 100%; margin-bottom: 0cm">   
-&lt;title&gt;Pimpinelly 4 Gewinnt&lt;/title&gt;</p>
-<p style="line-height: 100%; margin-bottom: 0cm">    &lt;style&gt;</p>
-<p style="line-height: 100%; margin-bottom: 0cm">        body {
-font-family: Arial, sans-serif; text-align: center; background-color:
-#f0f0f0; }</p>
-<p style="line-height: 100%; margin-bottom: 0cm">        .board {
-display: grid; grid-template-columns: repeat(7, 50px); grid-gap: 5px;
-justify-content: center; background-color: #333; padding: 10px;
-border-radius: 10px; margin: 20px auto; width: fit-content; }</p>
-<p style="line-height: 100%; margin-bottom: 0cm">        .cell {
-width: 50px; height: 50px; background-color: white; border-radius:
-50%; cursor: pointer; }</p>
-<p style="line-height: 100%; margin-bottom: 0cm">        .cell.player
-{ background-color: orange; }</p>
-<p style="line-height: 100%; margin-bottom: 0cm">       
-.cell.computer { background-color: blue; }</p>
-<p style="line-height: 100%; margin-bottom: 0cm">        img { width:
-150px; margin-top: 20px; }</p>
-<p style="line-height: 100%; margin-bottom: 0cm">    &lt;/style&gt;</p>
-<p style="line-height: 100%; margin-bottom: 0cm">&lt;/head&gt;</p>
-<p style="line-height: 100%; margin-bottom: 0cm">&lt;body&gt;</p>
-<p style="line-height: 100%; margin-bottom: 0cm"><br/>
+<body>
 
-</p>
-<p style="line-height: 100%; margin-bottom: 0cm">    &lt;img
-src=&quot;logo.png&quot; alt=&quot;Pimpinelly Logo&quot;&gt;</p>
-<p style="line-height: 100%; margin-bottom: 0cm">    &lt;h1&gt;Pimpinelly
-4 Gewinnt&lt;/h1&gt;</p>
-<p style="line-height: 100%; margin-bottom: 0cm">    &lt;div
-class=&quot;board&quot; id=&quot;board&quot;&gt;&lt;/div&gt;</p>
-<p style="line-height: 100%; margin-bottom: 0cm">    &lt;h2
-id=&quot;status&quot;&gt;Du bist dran!&lt;/h2&gt;</p>
-<p style="line-height: 100%; margin-bottom: 0cm">    &lt;button
-onclick=&quot;resetGame()&quot;&gt;Neu starten&lt;/button&gt;</p>
-<p style="line-height: 100%; margin-bottom: 0cm"><br/>
+    <img src="logo.png" alt="Pimpinelly Logo">
+    <h1>Pimpinellys 4-Gewinnt</h1>
+    
+    <div class="board" id="board"></div>
+    
+    <h2 id="status">Du bist dran (Orange)!</h2>
+    <button onclick="resetGame()">Spiel neu starten</button>
 
-</p>
-<p style="line-height: 100%; margin-bottom: 0cm">    &lt;script&gt;</p>
-<p style="line-height: 100%; margin-bottom: 0cm">        const ROWS =
-6;</p>
-<p style="line-height: 100%; margin-bottom: 0cm">        const
-COLUMNS = 7;</p>
-<p style="line-height: 100%; margin-bottom: 0cm">        let board =
-Array.from({ length: ROWS }, () =&gt; Array(COLUMNS).fill(0));</p>
-<p style="line-height: 100%; margin-bottom: 0cm">        let
-gameActive = true;</p>
-<p style="line-height: 100%; margin-bottom: 0cm"><br/>
+    <script>
+        const ROWS = 6;
+        const COLUMNS = 7;
+        let board = [];
+        let gameActive = true;
 
-</p>
-<p style="line-height: 100%; margin-bottom: 0cm">        function
-createBoard() {</p>
-<p style="line-height: 100%; margin-bottom: 0cm">            const
-boardElement = document.getElementById('board');</p>
-<p style="line-height: 100%; margin-bottom: 0cm">           
-boardElement.innerHTML = '';</p>
-<p style="line-height: 100%; margin-bottom: 0cm">            for (let
-r = 0; r &lt; ROWS; r++) {</p>
-<p style="line-height: 100%; margin-bottom: 0cm">                for
-(let c = 0; c &lt; COLUMNS; c++) {</p>
-<p style="line-height: 100%; margin-bottom: 0cm">                   
-const cell = document.createElement('div');</p>
-<p style="line-height: 100%; margin-bottom: 0cm">                   
-cell.classList.add('cell');</p>
-<p style="line-height: 100%; margin-bottom: 0cm">                   
-cell.dataset.row = r;</p>
-<p style="line-height: 100%; margin-bottom: 0cm">                   
-cell.dataset.col = c;</p>
-<p style="line-height: 100%; margin-bottom: 0cm">                   
-cell.onclick = () =&gt; playerMove(c);</p>
-<p style="line-height: 100%; margin-bottom: 0cm">                   
-boardElement.appendChild(cell);</p>
-<p style="line-height: 100%; margin-bottom: 0cm">                }</p>
-<p style="line-height: 100%; margin-bottom: 0cm">            }</p>
-<p style="line-height: 100%; margin-bottom: 0cm">        }</p>
-<p style="line-height: 100%; margin-bottom: 0cm"><br/>
+        function initGame() {
+            board = Array.from({ length: ROWS }, () => Array(COLUMNS).fill(0));
+            gameActive = true;
+            document.getElementById('status').innerText = "Du bist dran (Orange)!";
+            createBoard();
+        }
 
-</p>
-<p style="line-height: 100%; margin-bottom: 0cm">        function
-playerMove(c) {</p>
-<p style="line-height: 100%; margin-bottom: 0cm">            if
-(!gameActive) return;</p>
-<p style="line-height: 100%; margin-bottom: 0cm">            let r =
-getLowestEmptyRow(c);</p>
-<p style="line-height: 100%; margin-bottom: 0cm">            if (r
-!== -1) {</p>
-<p style="line-height: 100%; margin-bottom: 0cm">               
-placeStone(r, c, 1);</p>
-<p style="line-height: 100%; margin-bottom: 0cm">                if
-(checkWin(r, c)) {</p>
-<p style="line-height: 100%; margin-bottom: 0cm">                   
-document.getElementById('status').innerText = &quot;Pimpinelly
-gewinnt! 🤡&quot;;</p>
-<p style="line-height: 100%; margin-bottom: 0cm">                   
-new Audio('tusch.mp3').play();</p>
-<p style="line-height: 100%; margin-bottom: 0cm">                   
-gameActive = false;</p>
-<p style="line-height: 100%; margin-bottom: 0cm">                }
-else {</p>
-<p style="line-height: 100%; margin-bottom: 0cm">                   
-document.getElementById('status').innerText = &quot;Computer denkt
-nach...&quot;;</p>
-<p style="line-height: 100%; margin-bottom: 0cm">                   
-setTimeout(makeMove, 500);</p>
-<p style="line-height: 100%; margin-bottom: 0cm">                }</p>
-<p style="line-height: 100%; margin-bottom: 0cm">            }</p>
-<p style="line-height: 100%; margin-bottom: 0cm">        }</p>
-<p style="line-height: 100%; margin-bottom: 0cm"><br/>
+        function createBoard() {
+            const boardElement = document.getElementById('board');
+            boardElement.innerHTML = '';
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLUMNS; c++) {
+                    const cell = document.createElement('div');
+                    cell.classList.add('cell');
+                    cell.id = `cell-${r}-${c}`;
+                    cell.onclick = () => playerMove(c);
+                    boardElement.appendChild(cell);
+                }
+            }
+        }
 
-</p>
-<p style="line-height: 100%; margin-bottom: 0cm">        function
-makeMove() {</p>
-<p style="line-height: 100%; margin-bottom: 0cm">            if
-(!gameActive) return;</p>
-<p style="line-height: 100%; margin-bottom: 0cm">            let
-bestScore = -Infinity;</p>
-<p style="line-height: 100%; margin-bottom: 0cm">            let move
-= -1;</p>
-<p style="line-height: 100%; margin-bottom: 0cm"><br/>
+        function playerMove(c) {
+            if (!gameActive) return;
+            let r = getLowestEmptyRow(c);
+            if (r !== -1) {
+                placeStone(r, c, 1);
+                if (checkWin(r, c)) {
+                    document.getElementById('status').innerText = "Sieg für Pimpinelly! 🤡🎺";
+                    try { new Audio('tusch.mp3').play(); } catch(e) {}
+                    gameActive = false;
+                } else {
+                    document.getElementById('status').innerText = "Computer überlegt...";
+                    setTimeout(makeMove, 600);
+                }
+            }
+        }
 
-</p>
-<p style="line-height: 100%; margin-bottom: 0cm">            for (let
-c = 0; c &lt; COLUMNS; c++) {</p>
-<p style="line-height: 100%; margin-bottom: 0cm">                let
-r = getLowestEmptyRow(c);</p>
-<p style="line-height: 100%; margin-bottom: 0cm">                if
-(r !== -1) {</p>
-<p style="line-height: 100%; margin-bottom: 0cm">                   
-let score = 0;</p>
-<p style="line-height: 100%; margin-bottom: 0cm">                   
-board[r][c] = 2; // Teste Sieg für Blau</p>
-<p style="line-height: 100%; margin-bottom: 0cm">                   
-if (checkWin(r, c)) score = 1000;</p>
-<p style="line-height: 100%; margin-bottom: 0cm">                   
-else {</p>
-<p style="line-height: 100%; margin-bottom: 0cm">                    
-   board[r][c] = 1; // Teste Block für Orange</p>
-<p style="line-height: 100%; margin-bottom: 0cm">                    
-   if (checkWin(r, c)) score = 100;</p>
-<p style="line-height: 100%; margin-bottom: 0cm">                    
-   else if (c === 3) score = 3; // Mitte bevorzugen</p>
-<p style="line-height: 100%; margin-bottom: 0cm">                   
-}</p>
-<p style="line-height: 100%; margin-bottom: 0cm">                   
-board[r][c] = 0;</p>
-<p style="line-height: 100%; margin-bottom: 0cm"><br/>
+        function makeMove() {
+            if (!gameActive) return;
+            let move = -1;
+            let bestScore = -1;
 
-</p>
-<p style="line-height: 100%; margin-bottom: 0cm">                   
-if (score &gt; bestScore) {</p>
-<p style="line-height: 100%; margin-bottom: 0cm">                    
-   bestScore = score;</p>
-<p style="line-height: 100%; margin-bottom: 0cm">                    
-   move = c;</p>
-<p style="line-height: 100%; margin-bottom: 0cm">                   
-}</p>
-<p style="line-height: 100%; margin-bottom: 0cm">                }</p>
-<p style="line-height: 100%; margin-bottom: 0cm">            }</p>
-<p style="line-height: 100%; margin-bottom: 0cm"><br/>
+            // Einfache schlaue Logik
+            for (let c = 0; c < COLUMNS; c++) {
+                let r = getLowestEmptyRow(c);
+                if (r !== -1) {
+                    let score = 1;
+                    board[r][c] = 2; // Teste KI-Sieg
+                    if (checkWin(r, c)) score = 100;
+                    else {
+                        board[r][c] = 1; // Teste Blocken
+                        if (checkWin(r, c)) score = 50;
+                        else if (c === 3) score = 5; // Mitte bevorzugen
+                    }
+                    board[r][c] = 0;
 
-</p>
-<p style="line-height: 100%; margin-bottom: 0cm">            if (move
-=== -1) {</p>
-<p style="line-height: 100%; margin-bottom: 0cm">                let
-available = [];</p>
-<p style="line-height: 100%; margin-bottom: 0cm">               
-for(let c=0; c&lt;COLUMNS; c++) if(board[0][c] === 0)
-available.push(c);</p>
-<p style="line-height: 100%; margin-bottom: 0cm">                move
-= available[Math.floor(Math.random()*available.length)];</p>
-<p style="line-height: 100%; margin-bottom: 0cm">            }</p>
-<p style="line-height: 100%; margin-bottom: 0cm"><br/>
+                    if (score > bestScore) {
+                        bestScore = score;
+                        move = c;
+                    }
+                }
+            }
 
-</p>
-<p style="line-height: 100%; margin-bottom: 0cm">            let r =
-getLowestEmptyRow(move);</p>
-<p style="line-height: 100%; margin-bottom: 0cm">           
-placeStone(r, move, 2);</p>
-<p style="line-height: 100%; margin-bottom: 0cm">            if
-(checkWin(r, move)) {</p>
-<p style="line-height: 100%; margin-bottom: 0cm">               
-document.getElementById('status').innerText = &quot;Computer
-gewinnt!&quot;;</p>
-<p style="line-height: 100%; margin-bottom: 0cm">               
-gameActive = false;</p>
-<p style="line-height: 100%; margin-bottom: 0cm">            } else {</p>
-<p style="line-height: 100%; margin-bottom: 0cm">               
-document.getElementById('status').innerText = &quot;Du bist dran!&quot;;</p>
-<p style="line-height: 100%; margin-bottom: 0cm">            }</p>
-<p style="line-height: 100%; margin-bottom: 0cm">        }</p>
-<p style="line-height: 100%; margin-bottom: 0cm"><br/>
+            if (move === -1) {
+                let available = [];
+                for(let c=0; c<COLUMNS; c++) if(board[0][c] === 0) available.push(c);
+                move = available[Math.floor(Math.random() * available.length)];
+            }
 
-</p>
-<p style="line-height: 100%; margin-bottom: 0cm">        function
-getLowestEmptyRow(c) {</p>
-<p style="line-height: 100%; margin-bottom: 0cm">            for (let
-r = ROWS - 1; r &gt;= 0; r--) {</p>
-<p style="line-height: 100%; margin-bottom: 0cm">                if
-(board[r][c] === 0) return r;</p>
-<p style="line-height: 100%; margin-bottom: 0cm">            }</p>
-<p style="line-height: 100%; margin-bottom: 0cm">            return
--1;</p>
-<p style="line-height: 100%; margin-bottom: 0cm">        }</p>
-<p style="line-height: 100%; margin-bottom: 0cm"><br/>
+            let r = getLowestEmptyRow(move);
+            placeStone(r, move, 2);
+            if (checkWin(r, move)) {
+                document.getElementById('status').innerText = "Der Computer hat gewonnen! 🤖";
+                gameActive = false;
+            } else {
+                document.getElementById('status').innerText = "Du bist dran (Orange)!";
+            }
+        }
 
-</p>
-<p style="line-height: 100%; margin-bottom: 0cm">        function
-placeStone(r, c, p) {</p>
-<p style="line-height: 100%; margin-bottom: 0cm">           
-board[r][c] = p;</p>
-<p style="line-height: 100%; margin-bottom: 0cm">            const
-cell = document.querySelector(`[data-row='${r}'][data-col='${c}']`);</p>
-<p style="line-height: 100%; margin-bottom: 0cm">           
-cell.classList.add(p === 1 ? 'player' : 'computer');</p>
-<p style="line-height: 100%; margin-bottom: 0cm">        }</p>
-<p style="line-height: 100%; margin-bottom: 0cm"><br/>
+        function getLowestEmptyRow(c) {
+            for (let r = ROWS - 1; r >= 0; r--) {
+                if (board[r][c] === 0) return r;
+            }
+            return -1;
+        }
 
-</p>
-<p style="line-height: 100%; margin-bottom: 0cm">        function
-checkWin(r, c) {</p>
-<p style="line-height: 100%; margin-bottom: 0cm">            const p
-= board[r][c];</p>
-<p style="line-height: 100%; margin-bottom: 0cm">            const
-directions = [[0,1], [1,0], [1,1], [1,-1]];</p>
-<p style="line-height: 100%; margin-bottom: 0cm">            for (let
-[dr, dc] of directions) {</p>
-<p style="line-height: 100%; margin-bottom: 0cm">                let
-count = 1;</p>
-<p style="line-height: 100%; margin-bottom: 0cm">                for
-(let i = 1; i &lt; 4; i++) {</p>
-<p style="line-height: 100%; margin-bottom: 0cm">                   
-let nr = r + dr*i, nc = c + dc*i;</p>
-<p style="line-height: 100%; margin-bottom: 0cm">                   
-if (nr &gt;= 0 &amp;&amp; nr &lt; ROWS &amp;&amp; nc &gt;= 0 &amp;&amp;
-nc &lt; COLUMNS &amp;&amp; board[nr][nc] === p) count++;</p>
-<p style="line-height: 100%; margin-bottom: 0cm">                   
-else break;</p>
-<p style="line-height: 100%; margin-bottom: 0cm">                }</p>
-<p style="line-height: 100%; margin-bottom: 0cm">                for
-(let i = 1; i &lt; 4; i++) {</p>
-<p style="line-height: 100%; margin-bottom: 0cm">                   
-let nr = r - dr*i, nc = c - dc*i;</p>
-<p style="line-height: 100%; margin-bottom: 0cm">                   
-if (nr &gt;= 0 &amp;&amp; nr &lt; ROWS &amp;&amp; nc &gt;= 0 &amp;&amp;
-nc &lt; COLUMNS &amp;&amp; board[nr][nc] === p) count++;</p>
-<p style="line-height: 100%; margin-bottom: 0cm">                   
-else break;</p>
-<p style="line-height: 100%; margin-bottom: 0cm">                }</p>
-<p style="line-height: 100%; margin-bottom: 0cm">                if
-(count &gt;= 4) return true;</p>
-<p style="line-height: 100%; margin-bottom: 0cm">            }</p>
-<p style="line-height: 100%; margin-bottom: 0cm">            return
-false;</p>
-<p style="line-height: 100%; margin-bottom: 0cm">        }</p>
-<p style="line-height: 100%; margin-bottom: 0cm"><br/>
+        function placeStone(r, c, p) {
+            board[r][c] = p;
+            const cell = document.getElementById(`cell-${r}-${c}`);
+            cell.classList.add(p === 1 ? 'player' : 'computer');
+        }
 
-</p>
-<p style="line-height: 100%; margin-bottom: 0cm">        function
-resetGame() {</p>
-<p style="line-height: 100%; margin-bottom: 0cm">            board =
-Array.from({ length: ROWS }, () =&gt; Array(COLUMNS).fill(0));</p>
-<p style="line-height: 100%; margin-bottom: 0cm">           
-gameActive = true;</p>
-<p style="line-height: 100%; margin-bottom: 0cm">           
-document.getElementById('status').innerText = &quot;Du bist dran!&quot;;</p>
-<p style="line-height: 100%; margin-bottom: 0cm">           
-createBoard();</p>
-<p style="line-height: 100%; margin-bottom: 0cm">        }</p>
-<p style="line-height: 100%; margin-bottom: 0cm"><br/>
+        function checkWin(r, c) {
+            const p = board[r][c];
+            const directions = [[0,1], [1,0], [1,1], [1,-1]];
+            for (let [dr, dc] of directions) {
+                let count = 1;
+                for (let i = 1; i < 4; i++) {
+                    let nr = r + dr*i, nc = c + dc*i;
+                    if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLUMNS && board[nr][nc] === p) count++;
+                    else break;
+                }
+                for (let i = 1; i < 4; i++) {
+                    let nr = r - dr*i, nc = c - dc*i;
+                    if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLUMNS && board[nr][nc] === p) count++;
+                    else break;
+                }
+                if (count >= 4) return true;
+            }
+            return false;
+        }
 
-</p>
-<p style="line-height: 100%; margin-bottom: 0cm">       
-createBoard();</p>
-<p style="line-height: 100%; margin-bottom: 0cm">    &lt;/script&gt;</p>
-<p style="line-height: 100%; margin-bottom: 0cm">&lt;/body&gt;</p>
-<p style="line-height: 100%; margin-bottom: 0cm">&lt;/html&gt;</p>
+        function resetGame() {
+            initGame();
+        }
+
+        initGame();
+    </script>
 </body>
 </html>
