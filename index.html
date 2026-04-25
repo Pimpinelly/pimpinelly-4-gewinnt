@@ -6,21 +6,18 @@
     <title>Pimpinelly 4 Gewinnt</title>
   
 <style>
-        body { 
+   body { 
             font-family: 'Arial', sans-serif; 
             text-align: center; 
             background-color: #fce4ec; 
             color: #333; 
             margin: 0; 
             padding: 10px; 
-            /* Verhindert Zoomen beim Tippen */
             touch-action: manipulation; 
         }
 
-        /* Das Logo passt sich an */
         img { 
-            width: 100%;
-            max-width: 150px; 
+            width: 120px; /* Feste Größe für das Logo, damit es nicht springt */
             height: auto; 
             margin: 10px auto; 
             display: block;
@@ -32,28 +29,26 @@
         #score-display {
             font-size: 1.1rem;
             font-weight: bold;
-            margin-bottom: 10px;
+            margin: 10px 0;
             color: #555;
         }
 
         .board { 
-            display: inline-grid; /* Zentriert sich besser */
+            display: grid; 
             grid-template-columns: repeat(7, 1fr); 
-            grid-gap: 4px; 
+            grid-gap: 5px; 
             background-color: #007bff; 
-            padding: 8px; 
-            border-radius: 10px; 
+            padding: 10px; 
+            border-radius: 15px; 
             margin: 0 auto;
-            /* Wichtig: Nutzt die Breite, aber bleibt im Rahmen */
-            width: 95vw; 
-            max-width: 380px; 
+            /* Hier liegt der Zauber: */
+            width: 90vw;           /* Auf dem Handy fast volle Breite */
+            max-width: 350px;      /* Am Computer hört es hier auf zu wachsen! */
             box-shadow: 0 8px 16px rgba(0,0,0,0.2);
             box-sizing: border-box;
         }
 
         .cell { 
-            /* Dies erzwingt, dass die Zelle immer quadratisch bleibt */
-            width: 100%;
             aspect-ratio: 1 / 1; 
             background-color: white; 
             border-radius: 50%; 
@@ -68,20 +63,21 @@
         #status { font-size: 1.2rem; margin: 15px 0; min-height: 1.5em; }
 
         button { 
-            padding: 15px 30px; 
+            padding: 12px 24px; 
             font-size: 1.1rem; 
             background-color: #ff4081; 
             color: white; 
             border: none; 
-            border-radius: 50px; /* Schönere runde Buttons */
+            border-radius: 50px; 
             cursor: pointer; 
             box-shadow: 0 4px 10px rgba(255, 64, 129, 0.4);
-            width: 80%;
-            max-width: 280px;
+            width: auto;           /* Button passt sich seinem Text an */
+            min-width: 200px;
+            margin-bottom: 20px;
         }
 
-        button:active { transform: scale(0.98); }
-  </style>
+        button:active { transform: scale(0.95); }
+       </style>
 </head>
 <body>
 
