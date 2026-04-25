@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pimpinelly 4 Gewinnt</title>
-  
-<style>
-   body { 
+    <title>Pimpinellys Jahrmarkt-4-Gewinnt</title>
+    <style>
+        body { 
             font-family: 'Arial', sans-serif; 
             text-align: center; 
             background-color: #fce4ec; 
@@ -16,21 +15,32 @@
             touch-action: manipulation; 
         }
 
-        img { 
-            width: 120px; /* Feste Größe für das Logo, damit es nicht springt */
-            height: auto; 
-            margin: 10px auto; 
-            display: block;
-            border-radius: 10px; 
+        img { width: 100px; height: auto; margin: 5px auto; display: block; border-radius: 10px; }
+        
+        /* Die Jahrmarkt-Lämpchen */
+        .lights-container {
+            display: inline-block;
+            padding: 15px;
+            background: #222; /* Dunkler Rahmen für die Lichter */
+            border-radius: 20px;
+            border: 8px solid #444;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            position: relative;
+            animation: borderGlow 2s infinite alternate;
         }
 
-        h1 { font-size: 1.4rem; margin: 5px 0; }
+        @keyframes borderGlow {
+            from { box-shadow: 0 0 10px #ff4081; }
+            to { box-shadow: 0 0 25px #ffeb3b; }
+        }
 
-        #score-display {
-            font-size: 1.1rem;
-            font-weight: bold;
-            margin: 10px 0;
-            color: #555;
+        /* Einzelne blinkende Lämpchen */
+        .light {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #fff;
         }
 
         .board { 
@@ -39,13 +49,11 @@
             grid-gap: 5px; 
             background-color: #007bff; 
             padding: 10px; 
-            border-radius: 15px; 
-            margin: 0 auto;
-            /* Hier liegt der Zauber: */
-            width: 90vw;           /* Auf dem Handy fast volle Breite */
-            max-width: 350px;      /* Am Computer hört es hier auf zu wachsen! */
-            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-            box-sizing: border-box;
+            border-radius: 10px; 
+            width: 85vw; 
+            max-width: 340px; 
+            position: relative;
+            overflow: hidden; /* Damit Steine "hinter" dem Rahmen verschwinden */
         }
 
         .cell { 
@@ -54,52 +62,111 @@
             border-radius: 50%; 
             cursor: pointer; 
             border: 1px solid #0056b3;
-            box-sizing: border-box;
+            position: relative;
+            z-index: 2;
         }
 
-        .cell.player { background-color: orange; box-shadow: inset 0 0 6px rgba(0,0,0,0.3); }
-        .cell.computer { background-color: blue; box-shadow: inset 0 0 6px rgba(0,0,0,0.3); }
+        /* Die Animation für fallende Steine */
+        .stone {
+            position: absolute;
+            width: 90%;
+            height: 90%;
+            border-radius: 50%;
+            top: 5%;
+            left: 5%;
+            z-index: 1;
+            animation: fall 0.5s cubic-bezier(0.6, 0, 0.4, 1.2);
+        }
 
-        #status { font-size: 1.2rem; margin: 15px 0; min-height: 1.5em; }
+        @keyframes fall {
+            0% { transform: translateY(-500px); }
+            100% { transform: translateY(0); }
+        }
 
+        .player-stone { background: orange; box-shadow: inset 0 0 8px rgba(0,0,0,0.4); }
+        .computer-stone { background: blue; box-shadow: inset 0 0 8px rgba(0,0,0,0.4); }
+
+        /* Blinkeffekt bei Sieg */
+        .win-blink { animation: blink 0.3s infinite; }
+        @keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 0.3; }
+            100% { opacity: 1; }
+        }
+
+        #status { font-size: 1.2rem; margin: 10px 0; font-weight: bold; }
+        
         button { 
             padding: 12px 24px; 
-            font-size: 1.1rem; 
+            font-size: 1rem; 
             background-color: #ff4081; 
             color: white; 
             border: none; 
             border-radius: 50px; 
             cursor: pointer; 
-            box-shadow: 0 4px 10px rgba(255, 64, 129, 0.4);
-            width: auto;           /* Button passt sich seinem Text an */
-            min-width: 200px;
-            margin-bottom: 20px;
+            margin: 10px 0;
         }
-
-        button:active { transform: scale(0.95); }
-       </style>
+    </style>
 </head>
 <body>
 
-    <img src="logo.png" alt="Pimpinelly Logo">
-    <h1>Pimpinellys 4-Gewinnt</h1>
+    <img src="logo.png" alt="Logo">
+    <div id="score-display">Pimpinelly: 0 | Computer: 0</div>
+
+    <div class="lights-container" id="outer-frame">
+        <div class="board" id="board"></div>
+    </div>
     
-    <div class="board" id="board"></div>
-    
-    <h2 id="status">Du bist dran (Orange)!</h2>
-    <button onclick="resetGame()">Spiel neu starten</button>
+    <h2 id="status">Bereit zum Zocken?</h2>
+    <button onclick="resetGame()">Neues Spiel</button>
 
     <script>
- const ROWS = 6;
+        const ROWS = 6;
         const COLUMNS = 7;
         let board = [];
         let gameActive = true;
+        let scores = { player: 0, computer: 0 };
+
+        // Sound-Funktion
+        function playClick() {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(150, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(40, ctx.currentTime + 0.1);
+            gain.gain.setValueAtTime(0.1, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.1);
+        }
 
         function initGame() {
             board = Array.from({ length: ROWS }, () => Array(COLUMNS).fill(0));
             gameActive = true;
-            document.getElementById('status').innerText = "Du bist dran (Orange)!";
+            document.getElementById('status').innerText = "Du bist dran!";
+            document.getElementById('board').classList.remove('win-blink');
             createBoard();
+            createLights();
+        }
+
+        function createLights() {
+            const frame = document.getElementById('outer-frame');
+            // Alte Lichter entfernen
+            document.querySelectorAll('.light').forEach(l => l.remove());
+            const colors = ['#ff0', '#f0f', '#0ff', '#f00', '#0f0'];
+            for(let i=0; i<20; i++) {
+                const l = document.createElement('div');
+                l.className = 'light';
+                l.style.top = (i < 10) ? '-10px' : '100%';
+                l.style.left = (i % 10) * 11 + '%';
+                l.style.background = colors[i % colors.length];
+                l.style.boxShadow = `0 0 8px ${l.style.background}`;
+                l.style.animation = `blink ${0.5 + Math.random()}s infinite`;
+                frame.appendChild(l);
+            }
         }
 
         function createBoard() {
@@ -122,109 +189,61 @@
             if (r !== -1) {
                 placeStone(r, c, 1);
                 if (checkWin(r, c)) {
-                    document.getElementById('status').innerText = "Sieg für Pimpinelly! 🤡🎺";
-                    try { new Audio('tusch.mp3').play(); } catch(e) {}
-                    gameActive = false;
+                    scores.player++;
+                    endGame("Sieg! 🤡🎺");
                 } else {
-                    document.getElementById('status').innerText = "Computer überlegt...";
-                    setTimeout(makeMove, 500);
+                    gameActive = false; // Blocken während Computer denkt
+                    setTimeout(makeMove, 600);
                 }
             }
-        }
-
-        function makeMove() {
-            if (!gameActive) return;
-            let bestScore = -Infinity;
-            let move = 3;
-
-            for (let c = 0; c < COLUMNS; c++) {
-                let r = getLowestEmptyRow(c);
-                if (r !== -1) {
-                    let score = evaluatePosition(r, c);
-                    
-                    // Simulation: Verhindere tödliche Vorlagen
-                    board[r][c] = 2;
-                    let nextR = getLowestEmptyRow(c);
-                    if (nextR !== -1) {
-                        board[nextR][c] = 1;
-                        if (checkWin(nextR, c)) score -= 2000; // Drastisch erhöht!
-                        board[nextR][c] = 0;
-                    }
-                    board[r][c] = 0;
-
-                    if (score > bestScore) {
-                        bestScore = score;
-                        move = c;
-                    } else if (score === bestScore) {
-                        if (Math.random() > 0.5) move = c;
-                    }
-                }
-            }
-
-            let finalRow = getLowestEmptyRow(move);
-            placeStone(finalRow, move, 2);
-            if (checkWin(finalRow, move)) {
-                document.getElementById('status').innerText = "Computer gewinnt! 🤖";
-                gameActive = false;
-            } else {
-                document.getElementById('status').innerText = "Du bist dran (Orange)!";
-            }
-        }
-
-        function evaluatePosition(r, c) {
-            let score = 0;
-
-            // 1. Sofortiger Sieg (KI)
-            board[r][c] = 2;
-            if (checkWin(r, c)) { board[r][c] = 0; return 100000; }
-            
-            // 2. Sofortiges Blocken (Spieler) - ÜBERLEBENSWICHTIG
-            board[r][c] = 1;
-            if (checkWin(r, c)) { board[r][c] = 0; return 50000; }
-            board[r][c] = 0;
-
-            // 3. Spezial-Scan für horizontale Reihen (Boden-Check)
-            score += scanHorizontalDanger(r, c);
-
-            // 4. Mitte-Bonus
-            score += (3 - Math.abs(3 - c)) * 50;
-
-            return score;
-        }
-
-        function scanHorizontalDanger(r, c) {
-            let bonus = 0;
-            // Teste, wie viele Steine des Spielers in dieser Reihe wären
-            board[r][c] = 1;
-            let count = 0;
-            // Wir prüfen die direkte Umgebung links und rechts
-            for (let dc = -3; dc <= 3; dc++) {
-                let nc = c + dc;
-                if (nc >= 0 && nc < COLUMNS && board[r][nc] === 1) {
-                    count++;
-                } else {
-                    if (count > 0) {
-                        if (count === 2) bonus += 100;
-                        if (count === 3) bonus += 1000;
-                        count = 0;
-                    }
-                }
-            }
-            board[r][c] = 0;
-            return bonus;
-        }
-
-        function getLowestEmptyRow(c) {
-            for (let r = ROWS - 1; r >= 0; r--) {
-                if (board[r][c] === 0) return r;
-            }
-            return -1;
         }
 
         function placeStone(r, c, p) {
             board[r][c] = p;
             const cell = document.getElementById(`cell-${r}-${c}`);
-            cell.classList.add(p === 1 ? 'player' : 'computer');
+            const stone = document.createElement('div');
+            stone.className = `stone ${p === 1 ? 'player-stone' : 'computer-stone'}`;
+            cell.appendChild(stone);
+            playClick();
+        }
+
+        function makeMove() {
+            let bestScore = -Infinity;
+            let move = 3;
+            for (let c = 0; c < COLUMNS; c++) {
+                let r = getLowestEmptyRow(c);
+                if (r !== -1) {
+                    let score = evaluatePosition(r, c);
+                    if (score > bestScore) { bestScore = score; move = c; }
+                }
+            }
+            let r = getLowestEmptyRow(move);
+            placeStone(r, move, 2);
+            if (checkWin(r, move)) {
+                scores.computer++;
+                endGame("Computer gewinnt! 🤖");
+            } else {
+                gameActive = true;
+                document.getElementById('status').innerText = "Du bist dran!";
+            }
+        }
+
+        function evaluatePosition(r, c) {
+            board[r][c] = 2; if (checkWin(r, c)) { board[r][c] = 0; return 1000; }
+            board[r][c] = 1; if (checkWin(r, c)) { board[r][c] = 0; return 500; }
+            board[r][c] = 0; return (3 - Math.abs(3 - c));
+        }
+
+        function endGame(text) {
+            gameActive = false;
+            document.getElementById('status').innerText = text;
+            document.getElementById('score-display').innerText = `Pimpinelly: ${scores.player} | Computer: ${scores.computer}`;
+            document.getElementById('board').classList.add('win-blink');
+        }
+
+        function getLowestEmptyRow(c) {
+            for (let r = ROWS - 1; r >= 0; r--) if (board[r][c] === 0) return r;
+            return -1;
         }
 
         function checkWin(r, c) {
@@ -234,13 +253,11 @@
                 let count = 1;
                 for (let i = 1; i < 4; i++) {
                     let nr = r + dr*i, nc = c + dc*i;
-                    if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLUMNS && board[nr][nc] === p) count++;
-                    else break;
+                    if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLUMNS && board[nr][nc] === p) count++; else break;
                 }
                 for (let i = 1; i < 4; i++) {
                     let nr = r - dr*i, nc = c - dc*i;
-                    if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLUMNS && board[nr][nc] === p) count++;
-                    else break;
+                    if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLUMNS && board[nr][nc] === p) count++; else break;
                 }
                 if (count >= 4) return true;
             }
