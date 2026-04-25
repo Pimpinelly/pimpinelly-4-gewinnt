@@ -121,26 +121,28 @@
     <button onclick="resetGame()">Neues Spiel</button>
 
     <script>
-        const ROWS = 6;
+const ROWS = 6;
         const COLUMNS = 7;
         let board = [];
         let gameActive = true;
         let scores = { player: 0, computer: 0 };
 
-        // Sound-Funktion
+        // Der künstliche Klick-Sound (optimiert auf einen kurzen, sauberen Ton)
         function playClick() {
-            const ctx = new (window.AudioContext || window.webkitAudioContext)();
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(150, ctx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(40, ctx.currentTime + 0.1);
-            gain.gain.setValueAtTime(0.1, ctx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            osc.start();
-            osc.stop(ctx.currentTime + 0.1);
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(120, ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(30, ctx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.05, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.1);
+            } catch(e) { console.log("Audio-Fehler"); }
         }
 
         function initGame() {
@@ -154,7 +156,6 @@
 
         function createLights() {
             const frame = document.getElementById('outer-frame');
-            // Alte Lichter entfernen
             document.querySelectorAll('.light').forEach(l => l.remove());
             const colors = ['#ff0', '#f0f', '#0ff', '#f00', '#0f0'];
             for(let i=0; i<20; i++) {
@@ -187,13 +188,16 @@
             if (!gameActive) return;
             let r = getLowestEmptyRow(c);
             if (r !== -1) {
+                gameActive = false; // Verhindert Mehrfach-Klicks während der Stein fällt
                 placeStone(r, c, 1);
                 if (checkWin(r, c)) {
                     scores.player++;
-                    endGame("Sieg! 🤡🎺");
+                    setTimeout(() => {
+                        try { new Audio('tusch.mp3').play(); } catch(e) {}
+                        endGame("Sieg für Pimpinelly! 🤡🎺");
+                    }, 500); // Tusch erst, wenn der Stein unten angekommen ist
                 } else {
-                    gameActive = false; // Blocken während Computer denkt
-                    setTimeout(makeMove, 600);
+                    setTimeout(makeMove, 700);
                 }
             }
         }
@@ -204,7 +208,7 @@
             const stone = document.createElement('div');
             stone.className = `stone ${p === 1 ? 'player-stone' : 'computer-stone'}`;
             cell.appendChild(stone);
-            playClick();
+            playClick(); // Sound wird hier GENAU EINMAL beim Erstellen des Steins gerufen
         }
 
         function makeMove() {
@@ -221,7 +225,9 @@
             placeStone(r, move, 2);
             if (checkWin(r, move)) {
                 scores.computer++;
-                endGame("Computer gewinnt! 🤖");
+                setTimeout(() => {
+                    endGame("Computer gewinnt! 🤖");
+                }, 500);
             } else {
                 gameActive = true;
                 document.getElementById('status').innerText = "Du bist dran!";
@@ -235,7 +241,6 @@
         }
 
         function endGame(text) {
-            gameActive = false;
             document.getElementById('status').innerText = text;
             document.getElementById('score-display').innerText = `Pimpinelly: ${scores.player} | Computer: ${scores.computer}`;
             document.getElementById('board').classList.add('win-blink');
