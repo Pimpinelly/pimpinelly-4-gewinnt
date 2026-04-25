@@ -156,18 +156,50 @@
        function makeMove() {
     if (!gameActive) return;
 
-    // 1. Eigener Gewinn: Kann der Computer (Blau) sofort gewinnen?
+    let bestScore = -Infinity;
+    let move = -1;
+
+    // Die KI prüft jede Spalte
     for (let c = 0; c < COLUMNS; c++) {
         let r = getLowestEmptyRow(c);
         if (r !== -1) {
-            board[r][c] = 2; // Teste Zug für Blau
-            if (checkWin(r, c)) {
-                placeStone(r, c, 2);
-                return;
+            let score = 0;
+
+            // 1. Sofortiger Sieg für KI? (Sehr wichtig)
+            board[r][c] = 2;
+            if (checkWin(r, c)) score += 1000;
+
+            // 2. Muss KI den Spieler blocken? (Wichtig)
+            board[r][c] = 1;
+            if (checkWin(r, c)) score += 100;
+            
+            // 3. Strategie: Die Mitte ist meistens besser
+            if (c === Math.floor(COLUMNS / 2)) score += 3;
+
+            board[r][c] = 0; // Feld wieder frei machen
+
+            // Den besten Zug merken
+            if (score > bestScore) {
+                bestScore = score;
+                move = c;
+            } else if (score === bestScore && Math.random() > 0.5) {
+                move = c; // Bei Gleichstand zufällig wählen
             }
-            board[r][c] = 0; // Rückgängig
         }
     }
+
+    // Falls kein strategischer Zug gefunden wurde, nimm eine freie Spalte
+    if (move === -1 || bestScore === 0) {
+        let available = [];
+        for (let c = 0; c < COLUMNS; c++) {
+            if (board[0][c] === 0) available.push(c);
+        }
+        move = available[Math.floor(Math.random() * available.length)];
+    }
+
+    let finalRow = getLowestEmptyRow(move);
+    placeStone(finalRow, move, 2);
+}
 
     // 2. Blocken: Muss der Computer den Spieler (Orange) stoppen?
     for (let c = 0; c < COLUMNS; c++) {
