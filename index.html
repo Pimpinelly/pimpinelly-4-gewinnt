@@ -2,222 +2,209 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pimpinellys 4-Gewinnt - Professional</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pimpinellys Profi-4-Gewinnt</title>
     <style>
-        :root {
-            --board-blue: #0055ff;
-            --board-border: #0033aa;
-            --player-color: orange;
-            --ai-color: yellow;
-            --bg-color: #f8f9fa;
-        }
-
         body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            font-family: sans-serif; 
             text-align: center; 
-            background-color: var(--bg-color); 
+            background-color: #eee; 
             margin: 0; padding: 20px;
-            touch-action: manipulation;
         }
+        h1 { margin-bottom: 5px; }
+        .info { font-style: italic; margin-bottom: 15px; display: block; }
 
-        h1 { color: #222; margin-bottom: 5px; font-weight: 800; }
-        .info { font-style: italic; color: #666; margin-bottom: 20px; }
-
+        /* Sicherer Container gegen "Balken-Effekt" */
         .board-container {
             display: inline-block;
+            background-color: #222;
             padding: 15px;
-            background-color: #222; 
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            animation: circusLights 1.5s linear infinite;
+            border-radius: 15px;
+            box-shadow: 0 0 20px red;
+            animation: glow 1.5s infinite alternate;
         }
 
-        /* Das Spielfeld mit festem Grid gegen den "Balken-Effekt" */
+        /* Das Raster: Fest definierte Spalten und Reihen */
         .board { 
             display: grid; 
-            grid-template-columns: repeat(7, 50px); 
-            grid-template-rows: repeat(6, 50px); 
+            grid-template-columns: repeat(7, 45px); 
+            grid-template-rows: repeat(6, 45px); 
             grid-gap: 8px; 
-            background-color: var(--board-blue); 
+            background-color: #0055ff; 
             padding: 12px; 
-            border-radius: 10px; 
-            border: 4px solid var(--board-border);
+            border-radius: 8px;
+            border: 4px solid #0033aa;
         }
 
-        @media (max-width: 450px) {
-            .board {
-                grid-template-columns: repeat(7, 11vw);
-                grid-template-rows: repeat(6, 11vw);
-                grid-gap: 5px;
-            }
-        }
-
+        /* Die weißen Löcher */
         .cell { 
+            width: 45px;
+            height: 45px;
             background-color: white; 
             border-radius: 50%; 
-            cursor: pointer; 
-            box-shadow: inset 2px 2px 5px rgba(0,0,0,0.2);
-            transition: background 0.3s ease;
+            cursor: pointer;
+            box-shadow: inset 2px 2px 5px rgba(0,0,0,0.3);
         }
         
-        .cell.player { background-color: var(--player-color); box-shadow: inset 0 0 10px rgba(0,0,0,0.4); }
-        .cell.pimpinelly { background-color: var(--ai-color); box-shadow: inset 0 0 10px rgba(0,0,0,0.4); }
+        /* Die Farben der Steine */
+        .cell.player { background-color: orange !important; }
+        .cell.pimpinelly { background-color: yellow !important; }
         
-        #status { margin-top: 20px; font-weight: bold; font-size: 1.4rem; color: #333; }
-
+        #status { margin-top: 15px; font-size: 1.5rem; font-weight: bold; }
+        
         button {
-            margin-top: 25px; padding: 12px 35px; font-size: 1rem;
-            font-weight: bold; cursor: pointer; background-color: #222;
-            color: white; border: none; border-radius: 50px;
-            transition: transform 0.2s;
+            margin-top: 20px; padding: 10px 25px; 
+            font-size: 1rem; cursor: pointer;
+            background: #333; color: white; border: none; border-radius: 5px;
         }
-        button:active { transform: scale(0.95); }
 
-        @keyframes circusLights {
-            0%, 100% { box-shadow: 0 0 15px 5px red, 0 0 25px 8px yellow; }
-            50% { box-shadow: 0 0 15px 5px yellow, 0 0 25px 8px red; }
+        @keyframes glow {
+            from { box-shadow: 0 0 10px red; }
+            to { box-shadow: 0 0 25px yellow; }
+        }
+
+        /* Handy-Optimierung */
+        @media (max-width: 400px) {
+            .board { 
+                grid-template-columns: repeat(7, 38px); 
+                grid-template-rows: repeat(6, 38px);
+                grid-gap: 5px;
+            }
+            .cell { width: 38px; height: 38px; }
         }
     </style>
 </head>
 <body>
 
     <h1>Pimpinellys 4-Gewinnt</h1>
-    <p class="info">Du spielst heute gegen Pimpinelly</p>
+    <span class="info">Du spielst heute gegen Pimpinelly</span>
     
     <div class="board-container">
         <div id="board" class="board"></div>
     </div>
     
     <div id="status">Du bist dran!</div>
-    <button onclick="resetGame()">Spiel Neustarten</button>
+    <button onclick="resetGame()">Neustart</button>
 
     <script>
-        const ROWS = 6;
-        const COLUMNS = 7;
-        let board = Array.from({ length: ROWS }, () => Array(COLUMNS).fill(0));
-        let gameActive = true;
+        const ROWS = 6, COLS = 7;
+        let board = Array.from({length: ROWS}, () => Array(COLS).fill(0));
+        let active = true;
 
-        function createBoard() {
-            const boardElement = document.getElementById('board');
-            boardElement.innerHTML = '';
-            for (let r = 0; r < ROWS; r++) {
-                for (let c = 0; c < COLUMNS; c++) {
+        function init() {
+            const b = document.getElementById('board');
+            b.innerHTML = '';
+            for(let r=0; r<ROWS; r++) {
+                for(let c=0; c<COLS; c++) {
                     const cell = document.createElement('div');
-                    cell.classList.add('cell');
-                    cell.id = `cell-${r}-${c}`;
-                    cell.onclick = () => playerMove(c);
-                    boardElement.appendChild(cell);
+                    cell.className = 'cell';
+                    cell.id = `c-${r}-${c}`;
+                    cell.onclick = () => play(c);
+                    b.appendChild(cell);
                 }
             }
         }
 
-        function playerMove(c) {
-            if (!gameActive) return;
-            let r = getLowestEmptyRow(c);
-            if (r !== -1) {
-                placeStone(r, c, 1);
-                if (checkWin(r, c, 1)) {
-                    document.getElementById('status').innerText = "Gratulation! Du hast gewonnen! 🎉";
-                    gameActive = false;
-                } else if (board.flat().every(v => v !== 0)) {
-                    document.getElementById('status').innerText = "Unentschieden! 🤡";
-                    gameActive = false;
-                } else {
-                    document.getElementById('status').innerText = "Pimpinelly überlegt...";
-                    setTimeout(pimpinellyMove, 500);
-                }
-            }
-        }
-
-        function pimpinellyMove() {
-            if (!gameActive) return;
-            let move = getBestMove();
-            let r = getLowestEmptyRow(move);
-            placeStone(r, move, 2);
-            if (checkWin(r, move, 2)) {
-                document.getElementById('status').innerText = "Pimpinelly gewinnt! 🤡";
-                gameActive = false;
+        function play(c) {
+            if(!active) return;
+            let r = getRow(c);
+            if(r < 0) return;
+            
+            doMove(r, c, 1);
+            if(check(r, c, 1)) {
+                finish("Du hast gewonnen! 🎉");
             } else {
+                document.getElementById('status').innerText = "Pimpinelly überlegt...";
+                active = false;
+                setTimeout(ai, 500);
+            }
+        }
+
+        function ai() {
+            let move = bestMove();
+            let r = getRow(move);
+            doMove(r, move, 2);
+            if(check(r, move, 2)) {
+                finish("Pimpinelly gewinnt! 🤡");
+            } else {
+                active = true;
                 document.getElementById('status').innerText = "Du bist dran!";
             }
         }
 
-        function getBestMove() {
-            // 1. Sofort gewinnen, wenn möglich
-            for (let c = 0; c < COLUMNS; c++) {
-                let r = getLowestEmptyRow(c);
-                if (r !== -1) {
-                    board[r][c] = 2;
-                    if (checkWin(r, c, 2)) { board[r][c] = 0; return c; }
-                    board[r][c] = 0;
+        function bestMove() {
+            // 1. Kann ich gewinnen?
+            for(let c=0; c<COLS; c++) {
+                let r = getRow(c);
+                if(r>=0) {
+                    board[r][c]=2;
+                    if(check(r,c,2)) { board[r][c]=0; return c; }
+                    board[r][c]=0;
                 }
             }
-            // 2. Spieler blockieren, wenn dieser gewinnen könnte
-            for (let c = 0; c < COLUMNS; c++) {
-                let r = getLowestEmptyRow(c);
-                if (r !== -1) {
-                    board[r][c] = 1;
-                    if (checkWin(r, c, 1)) { board[r][c] = 0; return c; }
-                    board[r][c] = 0;
+            // 2. Muss ich den Spieler blocken? (Extrem wichtig für Boden-Strategie)
+            for(let c=0; c<COLS; c++) {
+                let r = getRow(c);
+                if(r>=0) {
+                    board[r][c]=1;
+                    if(check(r,c,1)) { board[r][c]=0; return c; }
+                    board[r][c]=0;
                 }
             }
-            // 3. Vorlagen-Vermeidung & Zentrum
-            let bestC = -1;
-            let bestScore = -1000;
-            const order = [3, 2, 4, 1, 5, 0, 6];
-            
-            for (let c of order) {
-                let r = getLowestEmptyRow(c);
-                if (r !== -1) {
-                    let score = (c === 3) ? 10 : (c >= 2 && c <= 4) ? 5 : 0;
-                    
-                    // Prüfen: Legen wir dem Spieler einen Sieg auf?
-                    if (r > 0) {
-                        board[r][c] = 2;
-                        board[r-1][c] = 1;
-                        if (checkWin(r-1, c, 1)) score -= 100;
-                        board[r-1][c] = 0;
-                        board[r][c] = 0;
-                    }
-                    
-                    if (score > bestScore) {
-                        bestScore = score;
-                        bestC = c;
-                    }
+            // 3. Mitte bevorzugen & Vorlagen verhindern
+            let moves = [3, 2, 4, 1, 5, 0, 6].filter(c => getRow(c) >= 0);
+            for(let c of moves) {
+                let r = getRow(c);
+                if(r > 0) {
+                    board[r][c] = 2; board[r-1][c] = 1;
+                    let danger = check(r-1, c, 1);
+                    board[r][c] = 0; board[r-1][c] = 0;
+                    if(!danger) return c;
                 }
             }
-            return bestC;
+            return moves[0];
         }
 
-        function getLowestEmptyRow(c) {
-            for (let r = ROWS - 1; r >= 0; r--) {
-                if (board[r][c] === 0) return r;
-            }
+        function getRow(c) {
+            for(let r=ROWS-1; r>=0; r--) if(board[r][c]===0) return r;
             return -1;
         }
 
-        function placeStone(r, c, p) {
+        function doMove(r, c, p) {
             board[r][c] = p;
-            const cell = document.getElementById(`cell-${r}-${c}`);
-            cell.classList.add(p === 1 ? 'player' : 'pimpinelly');
+            document.getElementById(`c-${r}-${c}`).className = `cell ${p===1?'player':'pimpinelly'}`;
         }
 
-        function checkWin(r, c, p) {
-            const directions = [[0,1], [1,0], [1,1], [1,-1]];
-            for (let [dr, dc] of directions) {
+        function check(r, c, p) {
+            const dirs = [[0,1],[1,0],[1,1],[1,-1]];
+            for(let [dr, dc] of dirs) {
                 let count = 1;
-                for (let i = 1; i < 4; i++) {
-                    let nr = r + dr*i, nc = c + dc*i;
-                    if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLUMNS && board[nr][nc] === p) count++; else break;
+                for(let i=1; i<4; i++) {
+                    let nr=r+dr*i, nc=c+dc*i;
+                    if(nr>=0 && nr<ROWS && nc>=0 && nc<COLS && board[nr][nc]===p) count++; else break;
                 }
-                for (let i = 1; i < 4; i++) {
-                    let nr = r - dr*i, nc = c - dc*i;
-                    if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLUMNS && board[nr][nc] === p) count++; else break;
+                for(let i=1; i<4; i++) {
+                    let nr=r-dr*i, nc=c-dc*i;
+                    if(nr>=0 && nr<ROWS && nc>=0 && nc<COLS && board[nr][nc]===p) count++; else break;
                 }
-                if (count >= 4) return true;
+                if(count>=4) return true;
             }
             return false;
         }
 
+        function finish(msg) {
+            document.getElementById('status').innerText = msg;
+            active = false;
+        }
+
         function resetGame() {
+            board = Array.from({length: ROWS}, () => Array(COLS).fill(0));
+            active = true;
+            document.getElementById('status').innerText = "Du bist dran!";
+            init();
+        }
+
+        init();
+    </script>
+</body>
+</html>
