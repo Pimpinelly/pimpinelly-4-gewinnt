@@ -9,14 +9,11 @@
             font-family: 'Arial', sans-serif; 
             text-align: center; 
             background-color: #f0f0f0; 
-            margin: 0;
-            padding: 10px;
+            margin: 0; padding: 10px;
             touch-action: manipulation;
         }
-
         h1 { font-size: 1.8rem; margin-bottom: 10px; color: #333; }
 
-        /* Blinkende Lichterkette */
         .board-container {
             display: inline-block;
             padding: 12px;
@@ -32,7 +29,7 @@
             display: grid; 
             grid-template-columns: repeat(7, 1fr); 
             grid-gap: 5px; 
-            background-color: #0055ff; /* Spielfeld Blau */
+            background-color: #0055ff; 
             padding: 10px; 
             border-radius: 10px; 
             width: 350px; 
@@ -48,21 +45,15 @@
             box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
         }
         
-        /* Steine: Spieler Orange, Pimpinelly Gelb */
         .cell.player { background-color: orange; box-shadow: inset 0 0 10px rgba(0,0,0,0.3); }
         .cell.pimpinelly { background-color: yellow; box-shadow: inset 0 0 10px rgba(0,0,0,0.3); }
         
         .logo { width: 140px; max-width: 40%; margin-top: 10px; }
         
         button {
-            padding: 12px 25px;
-            font-size: 1.1rem;
-            cursor: pointer;
-            background-color: #333;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            margin-top: 15px;
+            padding: 12px 25px; font-size: 1.1rem; cursor: pointer;
+            background-color: #333; color: white; border: none;
+            border-radius: 8px; margin-top: 15px;
         }
 
         @keyframes circusLights {
@@ -96,8 +87,7 @@
                 for (let c = 0; c < COLUMNS; c++) {
                     const cell = document.createElement('div');
                     cell.classList.add('cell');
-                    cell.dataset.row = r;
-                    cell.dataset.col = c;
+                    cell.dataset.row = r; cell.dataset.col = c;
                     cell.onclick = () => playerMove(c);
                     boardElement.appendChild(cell);
                 }
@@ -142,92 +132,11 @@
         }
 
         function calculateBestMove() {
-            let movesWithScores = [];
+            let bestScore = -Infinity;
+            let bestMoves = [];
+
             for (let c = 0; c < COLUMNS; c++) {
                 let r = getLowestEmptyRow(c);
                 if (r === -1) continue;
 
-                board[r][c] = 2; // Pimpinelly Sieg-Check
-                if (checkWin(r, c, 2)) { board[r][c] = 0; return c; }
-                board[r][c] = 0;
-
-                board[r][c] = 1; // Spieler Block-Check
-                if (checkWin(r, c, 1)) { board[r][c] = 0; return c; }
-                board[r][c] = 0;
-
-                let score = (c === 3) ? 15 : (c === 2 || c === 4) ? 8 : 0;
-                score += countLines(r, c, 2) * 4; 
-                score += countLines(r, c, 1) * 3; 
-
-                if (r > 0) {
-                    board[r][c] = 2;
-                    if (checkWin(r-1, c, 1)) score -= 100;
-                    board[r][c] = 0;
-                }
-                movesWithScores.push({col: c, score: score});
-            }
-            movesWithScores.sort((a, b) => b.score - a.score);
-            return movesWithScores[0].col;
-        }
-
-        function countLines(r, c, p) {
-            let score = 0;
-            const directions = [[0,1], [1,0], [1,1], [1,-1]];
-            for (let [dr, dc] of directions) {
-                let count = 0;
-                for (let i = -3; i <= 3; i++) {
-                    let nr = r + dr*i, nc = c + dc*i;
-                    if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLUMNS && (board[nr][nc] === p || board[nr][nc] === 0)) {
-                        count++;
-                    } else count = 0;
-                    if (count >= 4) score++;
-                }
-            }
-            return score;
-        }
-
-        function getLowestEmptyRow(c) {
-            for (let r = ROWS - 1; r >= 0; r--) {
-                if (board[r][c] === 0) return r;
-            }
-            return -1;
-        }
-
-        function isDraw() {
-            return board[0].every(cell => cell !== 0);
-        }
-
-        function placeStone(r, c, p) {
-            board[r][c] = p;
-            const cell = document.querySelector(`[data-row='${r}'][data-col='${c}']`);
-            cell.classList.add(p === 1 ? 'player' : 'pimpinelly');
-        }
-
-        function checkWin(r, c, p) {
-            const directions = [[0,1], [1,0], [1,1], [1,-1]];
-            for (let [dr, dc] of directions) {
-                let count = 1;
-                for (let i = 1; i < 4; i++) {
-                    let nr = r + dr*i, nc = c + dc*i;
-                    if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLUMNS && board[nr][nc] === p) count++; else break;
-                }
-                for (let i = 1; i < 4; i++) {
-                    let nr = r - dr*i, nc = c - dc*i;
-                    if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLUMNS && board[nr][nc] === p) count++; else break;
-                }
-                if (count >= 4) return true;
-            }
-            return false;
-        }
-
-        function resetGame() {
-            board = Array.from({ length: ROWS }, () => Array(COLUMNS).fill(0));
-            gameActive = true;
-            document.getElementById('status').innerText = "Spieler ist dran!";
-            createBoard();
-        }
-
-        createBoard();
-    </script>
-</body>
-</html>
+                // 1. Pimpinelly Sieg-Chance?
