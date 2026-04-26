@@ -6,76 +6,75 @@
     <title>Pimpinellys 4-Gewinnt</title>
     <style>
         :root {
-            --bg: #fdfdfd;
+            --bg: #ffffff;
             --board: #0044cc;
             --player: #ff9800;
             --pimpinelly: #ffeb3b;
         }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); text-align: center; margin: 0; padding: 10px; }
+        body { font-family: 'Arial', sans-serif; background: var(--bg); text-align: center; margin: 0; padding: 10px; }
         
-        /* Das Clown-Logo dezent oben */
-        .logo { width: 80px; height: auto; margin-top: 10px; opacity: 0.9; }
-
-        h1 { margin: 5px 0; color: var(--board); font-size: 2rem; font-weight: 800; }
+        .logo { width: 100px; height: auto; margin: 10px auto; display: block; }
+        h1 { margin: 5px 0; color: var(--board); font-size: 1.8rem; }
         .sub { font-style: italic; color: #666; margin-bottom: 15px; display: block; }
 
-        /* Der Rahmen mit bunten blinkenden Lichtern */
+        /* Der leuchtende Rahmen */
         .lights-border {
             display: inline-block;
-            padding: 12px;
-            border-radius: 25px;
+            padding: 10px;
+            border-radius: 20px;
             background: #222;
-            position: relative;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-            animation: rainbowLights 1.5s linear infinite;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            animation: blink 2s infinite alternate;
         }
 
-        @keyframes rainbowLights {
-            0% { box-shadow: 0 0 20px red; border: 3px solid #ff0000; }
-            33% { box-shadow: 0 0 20px lime; border: 3px solid #00ff00; }
-            66% { box-shadow: 0 0 20px cyan; border: 3px solid #0000ff; }
-            100% { box-shadow: 0 0 20px red; border: 3px solid #ff0000; }
+        @keyframes blink {
+            from { box-shadow: 0 0 15px red; border: 3px solid #ff0000; }
+            to { box-shadow: 0 0 25px yellow; border: 3px solid #ffff00; }
         }
 
+        /* Das Spielfeld - Fest fixiert gegen den "Blaue Fläche"-Fehler */
         .grid { 
             display: grid; 
-            grid-template-columns: repeat(7, 45px); 
-            grid-template-rows: repeat(6, 45px); 
+            grid-template-columns: repeat(7, 42px); 
+            grid-template-rows: repeat(6, 42px); 
             grid-gap: 8px; 
             background: var(--board); 
             padding: 12px; 
-            border-radius: 12px;
+            border-radius: 10px;
         }
 
+        /* Die weißen Felder */
         .slot { 
-            width: 45px; height: 45px; background: white; 
-            border-radius: 50%; cursor: pointer;
+            width: 42px; 
+            height: 42px; 
+            background: white; 
+            border-radius: 50%; 
+            cursor: pointer;
             box-shadow: inset 2px 2px 5px rgba(0,0,0,0.2);
-            transition: background 0.2s ease;
         }
 
-        .slot.p1 { background: var(--player); box-shadow: inset 0 0 10px rgba(0,0,0,0.4); }
-        .slot.p2 { background: var(--pimpinelly); box-shadow: inset 0 0 10px rgba(0,0,0,0.4); }
+        /* Spielsteine */
+        .slot.p1 { background: var(--player) !important; box-shadow: inset 0 0 10px rgba(0,0,0,0.4); }
+        .slot.p2 { background: var(--pimpinelly) !important; box-shadow: inset 0 0 10px rgba(0,0,0,0.4); }
 
-        #status { margin-top: 15px; font-size: 1.2rem; font-weight: bold; color: #333; min-height: 1.5em; }
+        #status { margin-top: 15px; font-size: 1.2rem; font-weight: bold; min-height: 1.5em; }
         
-        /* Button in Orange/Schwarz-Style */
+        /* Button in Orange/Schwarz */
         button {
-            margin-top: 20px; padding: 12px 35px; font-size: 1.1rem;
+            margin-top: 20px; padding: 12px 30px; font-size: 1rem;
             background: var(--player); color: #000; border: none; border-radius: 50px;
-            cursor: pointer; font-weight: bold; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            cursor: pointer; font-weight: bold;
         }
-        button:hover { background: #fb8c00; transform: scale(1.03); }
 
         @media (max-width: 400px) {
-            .grid { grid-template-columns: repeat(7, 36px); grid-template-rows: repeat(6, 36px); grid-gap: 6px; }
-            .slot { width: 36px; height: 36px; }
+            .grid { grid-template-columns: repeat(7, 34px); grid-template-rows: repeat(6, 34px); grid-gap: 5px; }
+            .slot { width: 34px; height: 34px; }
         }
     </style>
 </head>
 <body>
 
-    <img src="logo.png" alt="Pimpinelly" class="logo">
+    <img src="logo.png" alt="Logo" class="logo">
     <h1>Pimpinellys 4-Gewinnt</h1>
     <span class="sub">Du spielst heute gegen Pimpinelly</span>
 
@@ -99,5 +98,71 @@
             for(let r=0; r<R; r++) {
                 for(let c=0; c<C; c++) {
                     const s = document.createElement('div');
-                    s.className = 'slot' + (field[r][c] ? ' p'+field[r][c] : '');
-                    s.onclick = () => drop(
+                    s.className = 'slot';
+                    if(field[r][c] === 1) s.classList.add('p1');
+                    if(field[r][c] === 2) s.classList.add('p2');
+                    s.onclick = () => drop(c);
+                    b.appendChild(s);
+                }
+            }
+        }
+
+        function drop(c) {
+            if(!active) return;
+            let r = -1;
+            for(let i=R-1; i>=0; i--) { if(field[i][c]===0) { r=i; break; } }
+            if(r < 0) return;
+            
+            field[r][c] = 1;
+            draw();
+            if(checkWin(r, c, 1)) { 
+                document.getElementById('status').innerText = "Sieg! Du hast gewonnen! 🎉";
+                document.getElementById('winSound').play().catch(() => {});
+                active = false;
+            } else {
+                active = false;
+                document.getElementById('status').innerText = "Pimpinelly überlegt...";
+                setTimeout(ai, 600);
+            }
+        }
+
+        function ai() {
+            let moves = [3, 2, 4, 1, 5, 0, 6].filter(c => {
+                for(let i=R-1; i>=0; i--) if(field[i][c]===0) return true;
+                return false;
+            });
+
+            let bestC = moves[0];
+            // Einfache Logik: Sieg suchen oder Blocken
+            for(let c of moves) {
+                let r = -1;
+                for(let i=R-1; i>=0; i--) if(field[i][c]===0) { r=i; break; }
+                field[r][c] = 2; if(checkWin(r,c,2)) { field[r][c]=2; draw(); finishAI(); return; }
+                field[r][c] = 0;
+                field[r][c] = 1; if(checkWin(r,c,1)) { field[r][c]=2; draw(); active=true; document.getElementById('status').innerText="Du bist dran!"; return; }
+                field[r][c] = 0;
+            }
+
+            let rFinal = -1;
+            for(let i=R-1; i>=0; i--) if(field[i][bestC]===0) { rFinal=i; break; }
+            field[rFinal][bestC] = 2;
+            draw();
+            if(checkWin(rFinal, bestC, 2)) finishAI();
+            else { active = true; document.getElementById('status').innerText = "Du bist dran!"; }
+        }
+
+        function finishAI() { document.getElementById('status').innerText = "Pimpinelly gewinnt! 🤡"; active = false; }
+
+        function checkWin(r, c, p) {
+            const d = [[0,1],[1,0],[1,1],[1,-1]];
+            for(let [dr, dc] of d) {
+                let n = 1;
+                for(let i=1; i<4; i++) { let nr=r+dr*i, nc=c+dc*i; if(nr>=0 && nr<R && nc>=0 && nc<C && field[nr][nc]===p) n++; else break; }
+                for(let i=1; i<4; i++) { let nr=r-dr*i, nc=c-dc*i; if(nr>=0 && nr<R && nc>=0 && nc<C && field[nr][nc]===p) n++; else break; }
+                if(n >= 4) return true;
+            }
+            return false;
+        }
+
+        function reset() {
+            field = Array.from({length: R}, () => Array(
