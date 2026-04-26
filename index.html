@@ -21,7 +21,10 @@
         .p2 { background-color: #ffeb3b !important; }
 
         #status { font-weight: bold; margin: 8px 0; font-size: 1rem; color: #333; }
-        .reset-btn { background: #ff9800; border: none; padding: 8px 15px; font-weight: bold; border-radius: 20px; }
+        .reset-btn { background: #ff9800; border: none; padding: 8px 15px; font-weight: bold; border-radius: 20px; cursor: pointer; }
+        
+        .confetti { position: fixed; width: 6px; height: 6px; top: -10px; z-index: 999; animation: fall linear forwards; }
+        @keyframes fall { to { transform: translateY(110vh); } }
     </style>
 </head>
 <body>
@@ -32,19 +35,19 @@
 
     <div class="wrapper">
         <table class="board">
-            <tbody id="main-grid">
-                <tr><td><div id="c0-0" class="cell" onclick="play(0)"></div></td><td><div id="c0-1" class="cell" onclick="play(1)"></div></td><td><div id="c0-2" class="cell" onclick="play(2)"></div></td><td><div id="c0-3" class="cell" onclick="play(3)"></div></td><td><div id="c0-4" class="cell" onclick="play(4)"></div></td><td><div id="c0-5" class="cell" onclick="play(5)"></div></td><td><div id="c0-6" class="cell" onclick="play(6)"></div></td></tr>
-                <tr><td><div id="c1-0" class="cell" onclick="play(0)"></div></td><td><div id="c1-1" class="cell" onclick="play(1)"></div></td><td><div id="c1-2" class="cell" onclick="play(2)"></div></td><td><div id="c1-3" class="cell" onclick="play(3)"></div></td><td><div id="c1-4" class="cell" onclick="play(4)"></div></td><td><div id="c1-5" class="cell" onclick="play(5)"></div></td><td><div id="c1-6" class="cell" onclick="play(6)"></div></td></tr>
-                <tr><td><div id="c2-0" class="cell" onclick="play(0)"></div></td><td><div id="c2-1" class="cell" onclick="play(1)"></div></td><td><div id="c2-2" class="cell" onclick="play(2)"></div></td><td><div id="c2-3" class="cell" onclick="play(3)"></div></td><td><div id="c2-4" class="cell" onclick="play(4)"></div></td><td><div id="c2-5" class="cell" onclick="play(5)"></div></td><td><div id="c2-6" class="cell" onclick="play(6)"></div></td></tr>
-                <tr><td><div id="c3-0" class="cell" onclick="play(0)"></div></td><td><div id="c3-1" class="cell" onclick="play(1)"></div></td><td><div id="c3-2" class="cell" onclick="play(2)"></div></td><td><div id="c3-3" class="cell" onclick="play(3)"></div></td><td><div id="c3-4" class="cell" onclick="play(4)"></div></td><td><div id="c3-5" class="cell" onclick="play(5)"></div></td><td><div id="c3-6" class="cell" onclick="play(6)"></div></td></tr>
-                <tr><td><div id="c4-0" class="cell" onclick="play(0)"></div></td><td><div id="c4-1" class="cell" onclick="play(1)"></div></td><td><div id="c4-2" class="cell" onclick="play(2)"></div></td><td><div id="c4-3" class="cell" onclick="play(3)"></div></td><td><div id="c4-4" class="cell" onclick="play(4)"></div></td><td><div id="c4-5" class="cell" onclick="play(5)"></div></td><td><div id="c4-6" class="cell" onclick="play(6)"></div></td></tr>
-                <tr><td><div id="c5-0" class="cell" onclick="play(0)"></div></td><td><div id="c5-1" class="cell" onclick="play(1)"></div></td><td><div id="c5-2" class="cell" onclick="play(2)"></div></td><td><div id="c5-3" class="cell" onclick="play(3)"></div></td><td><div id="c5-4" class="cell" onclick="play(4)"></div></td><td><div id="c5-5" class="cell" onclick="play(5)"></div></td><td><div id="c5-6" class="cell" onclick="play(6)"></div></td></tr>
-            </tbody>
+            <tr><td><div id="c0-0" class="cell" onclick="play(0)"></div></td><td><div id="c0-1" class="cell" onclick="play(1)"></div></td><td><div id="c0-2" class="cell" onclick="play(2)"></div></td><td><div id="c0-3" class="cell" onclick="play(3)"></div></td><td><div id="c0-4" class="cell" onclick="play(4)"></div></td><td><div id="c0-5" class="cell" onclick="play(5)"></div></td><td><div id="c0-6" class="cell" onclick="play(6)"></div></td></tr>
+            <tr><td><div id="c1-0" class="cell" onclick="play(0)"></div></td><td><div id="c1-1" class="cell" onclick="play(1)"></div></td><td><div id="c1-2" class="cell" onclick="play(2)"></div></td><td><div id="c1-3" class="cell" onclick="play(3)"></div></td><td><div id="c1-4" class="cell" onclick="play(4)"></div></td><td><div id="c1-5" class="cell" onclick="play(5)"></div></td><td><div id="c1-6" class="cell" onclick="play(6)"></div></td></tr>
+            <tr><td><div id="c2-0" class="cell" onclick="play(0)"></div></td><td><div id="c2-1" class="cell" onclick="play(1)"></div></td><td><div id="c2-2" class="cell" onclick="play(2)"></div></td><td><div id="c2-3" class="cell" onclick="play(3)"></div></td><td><div id="c2-4" class="cell" onclick="play(4)"></div></td><td><div id="c2-5" class="cell" onclick="play(5)"></div></td><td><div id="c2-6" class="cell" onclick="play(6)"></div></td></tr>
+            <tr><td><div id="c3-0" class="cell" onclick="play(0)"></div></td><td><div id="c3-1" class="cell" onclick="play(1)"></div></td><td><div id="c3-2" class="cell" onclick="play(2)"></div></td><td><div id="c3-3" class="cell" onclick="play(3)"></div></td><td><div id="c3-4" class="cell" onclick="play(4)"></div></td><td><div id="c3-5" class="cell" onclick="play(5)"></div></td><td><div id="c3-6" class="cell" onclick="play(6)"></div></td></tr>
+            <tr><td><div id="c4-0" class="cell" onclick="play(0)"></div></td><td><div id="c4-1" class="cell" onclick="play(1)"></div></td><td><div id="c4-2" class="cell" onclick="play(2)"></div></td><td><div id="c4-3" class="cell" onclick="play(3)"></div></td><td><div id="c4-4" class="cell" onclick="play(4)"></div></td><td><div id="c4-5" class="cell" onclick="play(5)"></div></td><td><div id="c4-6" class="cell" onclick="play(6)"></div></td></tr>
+            <tr><td><div id="c5-0" class="cell" onclick="play(0)"></div></td><td><div id="c5-1" class="cell" onclick="play(1)"></div></td><td><div id="c5-2" class="cell" onclick="play(2)"></div></td><td><div id="c5-3" class="cell" onclick="play(3)"></div></td><td><div id="c5-4" class="cell" onclick="play(4)"></div></td><td><div id="c5-5" class="cell" onclick="play(5)"></div></td><td><div id="c5-6" class="cell" onclick="play(6)"></div></td></tr>
         </table>
     </div>
 
     <div id="status">Bereit?</div>
     <button class="reset-btn" onclick="resetGame()">Neues Spiel</button>
+
+    <audio id="audioTusch" src="tusch.mp3" preload="auto"></audio>
 
     <script>
         const R = 6, C = 7;
@@ -54,6 +57,7 @@
             grid = Array.from({ length: R }, () => new Array(C).fill(0));
             active = true;
             document.getElementById('status').innerText = "Du bist am Zug!";
+            document.querySelectorAll('.confetti').forEach(n => n.remove());
             updateVisuals();
         }
 
@@ -76,6 +80,8 @@
             updateVisuals();
             if (checkWin(r, c, 1)) {
                 document.getElementById('status').innerText = "Sieg! 🎉";
+                playTusch();
+                rain();
                 active = false;
             } else {
                 active = false;
@@ -86,11 +92,8 @@
 
         function cpuTurn() {
             let move = -1;
-            // 1. Sieg-Chance Pimpinelly
             for(let c=0; c<C; c++) { let r=getRow(c); if(r!=-1){ grid[r][c]=2; if(checkWin(r,c,2)) move=c; grid[r][c]=0; if(move!=-1)break;}}
-            // 2. Blocken Spieler
             if(move==-1) { for(let c=0; c<C; c++) { let r=getRow(c); if(r!=-1){ grid[r][c]=1; if(checkWin(r,c,1)) move=c; grid[r][c]=0; if(move!=-1)break;}}}
-            // 3. Boden-Sicherung
             if(move==-1) { for(let c=0; c<C; c++) { if(getRow(c)==5 && ((c<C-1 && grid[5][c+1]==1)||(c>0 && grid[5][c-1]==1))) {move=c; break;}}}
             if(move==-1) move = [3,2,4,1,5,0,6].find(c => getRow(c)!=-1);
             
@@ -121,7 +124,24 @@
             return false;
         }
 
-        // STARTBEFEHL OHNE WARTEN
+        function playTusch() {
+            let sound = document.getElementById('audioTusch');
+            if(sound) {
+                sound.play().catch(e => console.log("Sound braucht Klick"));
+            }
+        }
+
+        function rain() {
+            for (let i=0; i<50; i++) {
+                const d=document.createElement('div');
+                d.className='confetti';
+                d.style.left=Math.random()*100+'vw';
+                d.style.backgroundColor=['#ff9800','#ffeb3b','#ff0000','#0044cc'][Math.floor(Math.random()*4)];
+                d.style.animationDuration=(Math.random()*2+1)+'s';
+                document.body.appendChild(d);
+            }
+        }
+
         resetGame();
     </script>
 </body>
