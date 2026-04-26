@@ -29,7 +29,7 @@
             display: grid; 
             grid-template-columns: repeat(7, 1fr); 
             grid-gap: 5px; 
-            background-color: #0055ff; 
+            background-color: #0055ff; /* Spielfeld Blau */
             padding: 10px; 
             border-radius: 10px; 
             width: 350px; 
@@ -48,8 +48,6 @@
         .cell.player { background-color: orange; box-shadow: inset 0 0 10px rgba(0,0,0,0.3); }
         .cell.pimpinelly { background-color: yellow; box-shadow: inset 0 0 10px rgba(0,0,0,0.3); }
         
-        .logo { width: 140px; max-width: 40%; margin-top: 10px; }
-        
         button {
             padding: 12px 25px; font-size: 1.1rem; cursor: pointer;
             background-color: #333; color: white; border: none;
@@ -64,7 +62,6 @@
 </head>
 <body>
 
-    <img src="logo.png" alt="Pimpinelly Logo" class="logo" onerror="this.style.display='none'">
     <h1>Pimpinellys 4-Gewinnt</h1>
     
     <div class="board-container">
@@ -120,7 +117,6 @@
                 placeStone(r, move, 2);
                 if (checkWin(r, move, 2)) {
                     document.getElementById('status').innerText = "Pimpinelly gewinnt! 🤡";
-                    new Audio('tusch.mp3').play().catch(() => {});
                     gameActive = false;
                 } else if (isDraw()) {
                     document.getElementById('status').innerText = "Unentschieden! 🤡";
@@ -139,4 +135,85 @@
                 let r = getLowestEmptyRow(c);
                 if (r === -1) continue;
 
-                // 1. Pimpinelly Sieg-Chance?
+                // 1. KANN PIMPINELLY JETZT GEWINNEN?
+                board[r][c] = 2;
+                if (checkWin(r, c, 2)) { board[r][c] = 0; return c; }
+                board[r][c] = 0;
+
+                // 2. MUSS ER DEN SPIELER BLOCKEN? (4er Reihe verhindern)
+                board[r][c] = 1;
+                if (checkWin(r, c, 1)) { board[r][c] = 0; return c; }
+                board[r][c] = 0;
+
+                // 3. BEWERTUNG DES ZUGES
+                let score = 0;
+                
+                // Zentrum bevorzugen (Spalte 3 ist am stärksten)
+                const centerBonus = [0, 2, 4, 10, 4, 2, 0];
+                score += centerWeights = centerBonus[c];
+
+                // Bedrohungserkennung: Blockiere Spieler-Dreier aggressiv
+                score += evaluateMovePotential(r, c, 1) * 15; 
+                // Eigene Chancen aufbauen
+                score += evaluateMovePotential(r, c, 2) * 10;
+
+                // Vorlagen-Vermeidung: Nicht dahin setzen, wo der Spieler danach gewinnen kann
+                if (r > 0) {
+                    board[r][c] = 2;
+                    if (checkWin(r - 1, c, 1)) score -= 100;
+                    board[r][c] = 0;
+                }
+
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestMoves = [c];
+                } else if (score === bestScore) {
+                    bestMoves.push(c);
+                }
+            }
+            return bestMoves[Math.floor(Math.random() * bestMoves.length)];
+        }
+
+        // Zählt, wie viele (fast fertige) Reihen ein Stein an dieser Position beeinflusst
+        function evaluateMovePotential(r, c, p) {
+            let totalPotential = 0;
+            const directions = [[0,1], [1,0], [1,1], [1,-1]];
+            for (let [dr, dc] of directions) {
+                let count = 0;
+                for (let i = -3; i <= 3; i++) {
+                    let nr = r + dr*i, nc = c + dc*i;
+                    if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLUMNS) {
+                        if (board[nr][nc] === p || (nr === r && nc === c)) count++;
+                        else if (board[nr][nc] !== 0) count = 0; 
+                    }
+                    if (count >= 4) totalPotential++;
+                }
+            }
+            return totalPotential;
+        }
+
+        function getLowestEmptyRow(c) {
+            for (let r = ROWS - 1; r >= 0; r--) {
+                if (board[r][c] === 0) return r;
+            }
+            return -1;
+        }
+
+        function isDraw() { return board[0].every(cell => cell !== 0); }
+
+        function placeStone(r, c, p) {
+            board[r][c] = p;
+            const cell = document.querySelector(`[data-row='${r}'][data-col='${c}']`);
+            cell.classList.add(p === 1 ? 'player' : 'pimpinelly');
+        }
+
+        function checkWin(r, c, p) {
+            const directions = [[0,1], [1,0], [1,1], [1,-1]];
+            for (let [dr, dc] of directions) {
+                let count = 1;
+                for (let i = 1; i < 4; i++) {
+                    let nr = r + dr*i, nc = c + dc*i;
+                    if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLUMNS && board[nr][nc] === p) count++; else break;
+                }
+                for (let i = 1; i < 4; i++) {
+                    let nr =
