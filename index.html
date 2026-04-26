@@ -36,11 +36,10 @@
             border-radius: 50%; 
             cursor: pointer;
             display: block;
-            transition: background 0.2s;
         }
 
-        .p1 { background-color: #ff9800 !important; } /* Spieler Orange */
-        .p2 { background-color: #ffeb3b !important; } /* Pimpinelly Gelb */
+        .p1 { background-color: #ff9800 !important; } /* Spieler */
+        .p2 { background-color: #ffeb3b !important; } /* Pimpinelly */
 
         #status { font-weight: bold; margin: 15px 0; font-size: 1.1rem; min-height: 1.5em; color: #333; }
         .reset-btn { background: #ff9800; color: #000; border: none; padding: 12px 30px; font-size: 1.1rem; font-weight: bold; border-radius: 50px; cursor: pointer; }
@@ -62,139 +61,4 @@
                     for(let r=0; r<6; r++) {
                         document.write('<tr>');
                         for(let c=0; c<7; c++) {
-                            document.write('<td><div id="c' + r + '-' + c + '" class="cell" onclick="play(' + c + ')"></div></td>');
-                        }
-                        document.write('</tr>');
-                    }
-                </script>
-            </tbody>
-        </table>
-    </div>
-
-    <div id="status">Manege wird aufgebaut...</div>
-    <button class="reset-btn" onclick="resetGame()">Neues Spiel</button>
-
-    <audio id="tusch" src="tusch.mp3" preload="auto"></audio>
-
-    <script>
-        const R = 6, C = 7;
-        let grid = [];
-        let active = false;
-
-        // Initialisiert das Gitter
-        function initGrid() {
-            grid = [];
-            for(let i=0; i<R; i++) {
-                grid.push(new Array(C).fill(0));
-            }
-        }
-
-        function resetGame() {
-            initGrid();
-            active = true;
-            document.getElementById('status').innerText = "Du bist am Zug!";
-            document.querySelectorAll('.confetti').forEach(n => n.remove());
-            updateVisuals();
-        }
-
-        function updateVisuals() {
-            for(let r=0; r<R; r++) {
-                for(let c=0; c<C; c++) {
-                    let cell = document.getElementById('c' + r + '-' + c);
-                    if(cell) {
-                        cell.className = 'cell';
-                        if(grid[r][c] === 1) cell.classList.add('p1');
-                        if(grid[r][c] === 2) cell.classList.add('p2');
-                    }
-                }
-            }
-        }
-
-        function play(c) {
-            if (!active) return;
-            let r = getR(c);
-            if (r === -1) return;
-
-            grid[r][c] = 1;
-            updateVisuals();
-
-            if (check(r, c, 1)) {
-                document.getElementById('status').innerText = "Sieg! 🎉";
-                document.getElementById('tusch').play().catch(() => {});
-                rain();
-                active = false;
-            } else {
-                active = false;
-                document.getElementById('status').innerText = "Pimpinelly spielt mit...";
-                setTimeout(cpu, 600);
-            }
-        }
-
-        function cpu() {
-            let move = -1;
-            // 1. Pimpinelly gewinnt sofort
-            for(let c=0; c<C; c++) {
-                let r = getR(c);
-                if(r!=-1) { grid[r][c]=2; if(check(r,c,2)) move=c; grid[r][c]=0; if(move!=-1) break; }
-            }
-            // 2. Blocken
-            if(move == -1) {
-                for(let c=0; c<C; c++) {
-                    let r = getR(c);
-                    if(r!=-1) { grid[r][c]=1; if(check(r,c,1)) move=c; grid[r][c]=0; if(move!=-1) break; }
-                }
-            }
-            // 3. Strategie
-            if(move == -1) move = [3,2,4,1,5,0,6].find(c => getR(c)!=-1);
-            
-            let rFinal = getR(move);
-            if(rFinal != -1) {
-                grid[rFinal][move] = 2;
-                updateVisuals();
-                if (check(rFinal, move, 2)) document.getElementById('status').innerText = "Pimpinelly hat 4! 🤡";
-                else { active = true; document.getElementById('status').innerText = "Du bist dran!"; }
-            }
-        }
-
-        function rain() {
-            for (let i = 0; i < 60; i++) {
-                const d = document.createElement('div');
-                d.className = 'confetti';
-                d.style.left = Math.random() * 100 + 'vw';
-                d.style.backgroundColor = ['#ff9800','#ffeb3b','#ff0000','#0044cc'][Math.floor(Math.random()*4)];
-                d.style.animationDuration = (Math.random()*2+1.5)+'s';
-                document.body.appendChild(d);
-            }
-        }
-
-        function getR(c) { 
-            for(let i=R-1; i>=0; i--) {
-                if(grid[i] && grid[i][c] === 0) return i;
-            }
-            return -1; 
-        }
-
-        function check(r, c, p) {
-            const dirs = [[0,1],[1,0],[1,1],[1,-1]];
-            for (let [dr, dc] of dirs) {
-                let count = 1;
-                for (let i = 1; i < 4; i++) {
-                    let nr = r + dr*i, nc = c + dc*i;
-                    if (nr >= 0 && nr < R && nc >= 0 && nc < C && grid[nr][nc] === p) count++; else break;
-                }
-                for (let i = 1; i < 4; i++) {
-                    let nr = r - dr*i, nc = c - dc*i;
-                    if (nr >= 0 && nr < R && nc >= 0 && nc < C && grid[nr][nc] === p) count++; else break;
-                }
-                if (count >= 4) return true;
-            }
-            return false;
-        }
-
-        // Startet das Spiel automatisch nach einer kurzen Pause
-        window.onload = function() {
-            setTimeout(resetGame, 500);
-        };
-    </script>
-</body>
-</html>
+                            document.write('<td><div id="c' + r + '-' + c + '" class="cell" onclick="play(' + c + ')">
