@@ -5,31 +5,56 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Pimpinelly 4-Gewinnt</title>
     <style>
-        body { font-family: Arial, sans-serif; background: #ffffff; margin: 0; padding: 10px; text-align: center; }
-        .logo { width: 60px; height: auto; margin-top: 5px; }
-        h1 { color: #0044cc; margin: 5px 0; font-size: 1.4rem; }
-        .sub { font-size: 1.1rem; color: #333; margin-bottom: 15px; font-weight: bold; display: block; }
+        /* Verhindert, dass das Handy die Seite abschneidet */
+        html, body { 
+            background: #ffffff; 
+            margin: 0; padding: 0; 
+            width: 100%; min-height: 100%;
+            display: flex; flex-direction: column; align-items: center;
+            font-family: Arial, sans-serif;
+        }
 
+        .logo { width: 55px; height: auto; margin-top: 15px; }
+        h1 { color: #0044cc; margin: 5px 0; font-size: 1.3rem; }
+        .sub { font-size: 1rem; color: #333; margin-bottom: 15px; font-weight: bold; }
+
+        /* Der Rahmen passt sich jetzt der Größe des Inhalts an */
         .wrapper {
-            background-color: #222; padding: 10px; border-radius: 12px;
-            border: 4px solid #444; display: inline-block;
+            background-color: #222;
+            padding: 8px;
+            border-radius: 12px;
+            border: 4px solid #444;
+            display: inline-block;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
 
         .board { 
-            background-color: #0044cc; border-collapse: separate; 
-            border-spacing: 5px; border-radius: 8px;
+            background-color: #0044cc; 
+            border-collapse: separate; 
+            border-spacing: 4px; 
+            border-radius: 8px;
         }
 
+        /* Zellen etwas schmaler (36px statt 40px), damit alle 6 Reihen Platz haben */
         .cell { 
-            width: 38px; height: 38px; background-color: #ffffff; 
-            border-radius: 50%; cursor: pointer; display: block;
+            width: 36px; height: 36px; 
+            background-color: #ffffff; 
+            border-radius: 50%; 
+            cursor: pointer; 
+            display: block;
         }
 
-        .p1 { background-color: #ff9800 !important; }
-        .p2 { background-color: #ffeb3b !important; }
+        .p1 { background-color: #ff9800 !important; } /* Du */
+        .p2 { background-color: #ffeb3b !important; } /* Pimpinelly */
 
         #status { font-weight: bold; margin: 15px 0; font-size: 1.1rem; min-height: 1.5em; }
-        .reset-btn { background: #ff9800; color: #000; border: none; padding: 12px 30px; font-size: 1.1rem; font-weight: bold; border-radius: 50px; cursor: pointer; }
+        
+        .reset-btn { 
+            background: #ff9800; color: #000; border: none; 
+            padding: 12px 30px; font-size: 1.1rem; font-weight: bold; 
+            border-radius: 50px; cursor: pointer; margin-bottom: 20px;
+        }
+
         .confetti { position: fixed; width: 8px; height: 8px; top: -10px; z-index: 999; pointer-events: none; animation: fall linear forwards; }
         @keyframes fall { to { transform: translateY(110vh) rotate(360deg); } }
     </style>
@@ -56,4 +81,9 @@
                 <td><div id="c1-1" class="cell" onclick="play(1)"></div></td>
                 <td><div id="c1-2" class="cell" onclick="play(2)"></div></td>
                 <td><div id="c1-3" class="cell" onclick="play(3)"></div></td>
-                <td><div id
+                <td><div id="c1-4" class="cell" onclick="play(4)"></div></td>
+                <td><div id="c1-5" class="cell" onclick="play(5)"></div></td>
+                <td><div id="c1-6" class="cell" onclick="play(6)"></div></td>
+            </tr>
+            <tr>
+                <td><div id="c2
