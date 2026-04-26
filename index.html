@@ -50,7 +50,7 @@
             if (!gameActive) return;
             let r = getLowestEmptyRow(c);
             if (r !== -1) {
-                placeStone(r, c, 1); // Spieler setzt Stein
+                placeStone(r, c, 1); // Spieler (Orange)
                 if (checkWin(r, c)) {
                     document.getElementById('status').innerText = "Gratulation! Du hast gewonnen! 🎉";
                     gameActive = false;
@@ -67,10 +67,10 @@
             let r = getLowestEmptyRow(move);
             
             if (r !== -1) {
-                placeStone(r, move, 2); // Pimpinelly setzt Stein
+                placeStone(r, move, 2); // Pimpinelly (Blau)
                 if (checkWin(r, move)) {
                     document.getElementById('status').innerText = "Pimpinelly gewinnt! 🤡";
-                    new Audio('tusch.mp3').play().catch(() => console.log("Audio-Play blockiert oder Datei fehlt."));
+                    new Audio('tusch.mp3').play().catch(() => {});
                     gameActive = false;
                 } else {
                     document.getElementById('status').innerText = "Du bist dran!";
@@ -91,7 +91,7 @@
                     else {
                         board[r][c] = 1; // Spieler blocken prüfen
                         if (checkWin(r, c)) score = 100;
-                        else if (c === 3) score = 3; // Mitte ist taktisch besser
+                        else if (c === 3) score = 3;
                     }
                     board[r][c] = 0;
 
