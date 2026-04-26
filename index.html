@@ -3,7 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    
+    <meta name="apple-mobile-web-app-title" content="Pimpinelly">
     <title>Pimpinelly 4-Gewinnt</title>
+
+    <link rel="apple-touch-icon" href="desktopbutton.jpg">
+    <link rel="icon" type="image/jpeg" href="desktopbutton.jpg">
+
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
     <style>
         body { font-family: Arial, sans-serif; background: #ffffff; margin: 0; padding: 5px; text-align: center; }
         .logo { width: 45px; height: auto; }
@@ -15,12 +24,12 @@
             display: inline-block; margin: 0 auto;
         }
         .board { background-color: #0044cc; border-spacing: 2px; border-radius: 5px; }
-        .cell { width: 30px; height: 30px; background-color: #ffffff; border-radius: 50%; display: block; }
+        .cell { width: 30px; height: 30px; background-color: #ffffff; border-radius: 50%; display: block; cursor: pointer; }
 
         .p1 { background-color: #ff9800 !important; }
         .p2 { background-color: #ffeb3b !important; }
 
-        #status { font-weight: bold; margin: 8px 0; font-size: 1rem; color: #333; }
+        #status { font-weight: bold; margin: 8px 0; font-size: 1rem; color: #333; min-height: 1.2em; }
         .reset-btn { background: #ff9800; border: none; padding: 8px 15px; font-weight: bold; border-radius: 20px; cursor: pointer; }
         
         .confetti { position: fixed; width: 6px; height: 6px; top: -10px; z-index: 999; animation: fall linear forwards; }
