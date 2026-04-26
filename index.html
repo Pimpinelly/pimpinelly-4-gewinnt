@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Pimpinellys 4-Gewinnt</title>
     <style>
-        /* Grundsetup für Stabilität */
         * { box-sizing: border-box; }
         body { 
             font-family: sans-serif; 
@@ -17,11 +16,10 @@
             min-height: 100vh;
         }
 
-        .logo-img { width: 60px; height: auto; margin-bottom: 5px; }
+        .logo-img { width: 65px; height: auto; margin-bottom: 5px; }
         h1 { color: #0044cc; margin: 5px 0; font-size: 1.5rem; text-align: center; }
-        .sub { font-size: 0.9rem; color: #666; margin-bottom: 10px; }
+        .sub { font-size: 1rem; color: #333; margin-bottom: 10px; font-weight: bold; }
 
-        /* Das Gehäuse: Jetzt stabil zentriert */
         .wrapper {
             background: #222;
             padding: 8px;
@@ -31,7 +29,6 @@
             max-width: 100%;
         }
 
-        /* Das Spielfeld: Keine Abstände, kein Wackeln */
         .board { 
             background-color: #0044cc; 
             border-collapse: collapse;
@@ -40,14 +37,13 @@
         }
 
         .cell {
-            width: 40px;
-            height: 40px;
+            width: 42px;
+            height: 42px;
             background: #0044cc;
             padding: 3px;
             cursor: pointer;
         }
 
-        /* Die weißen Löcher */
         .hole {
             width: 100%;
             height: 100%;
@@ -56,9 +52,8 @@
             box-shadow: inset 1px 1px 4px rgba(0,0,0,0.2);
         }
 
-        /* Spielsteine */
-        .p1 .hole { background: #ff9800 !important; } /* Orange */
-        .p2 .hole { background: #ffeb3b !important; } /* Gelb */
+        .p1 .hole { background: #ff9800 !important; }
+        .p2 .hole { background: #ffeb3b !important; }
 
         #status { font-weight: bold; margin: 15px 0; font-size: 1.1rem; height: 1.5em; text-align: center; }
         
@@ -68,16 +63,14 @@
             border-radius: 50px; cursor: pointer; box-shadow: 0 3px 10px rgba(0,0,0,0.2);
         }
 
-        /* Konfetti bleibt im Vordergrund */
         .confetti {
             position: fixed; width: 8px; height: 8px; top: -10px;
             z-index: 999; pointer-events: none; animation: fall linear forwards;
         }
         @keyframes fall { to { transform: translateY(110vh) rotate(360deg); } }
 
-        /* Anpassung für sehr kleine Bildschirme */
         @media (max-width: 350px) {
-            .cell { width: 35px; height: 35px; }
+            .cell { width: 38px; height: 38px; }
         }
     </style>
 </head>
@@ -85,13 +78,13 @@
 
     <img src="logo.png" alt="Pimpinelly Logo" class="logo-img">
     <h1>Pimpinellys 4-Gewinnt</h1>
-    <div class="sub">Du gegen Pimpinelly</div>
+    <div class="sub">Du spielst heute mit Pimpinelly</div>
 
     <div class="wrapper">
         <table id="game-board" class="board"></table>
     </div>
 
-    <div id="status">Bereit zum Sieg?</div>
+    <div id="status">Bist du bereit?</div>
     <button class="reset-btn" onclick="startNewGame()">Neues Spiel</button>
 
     <audio id="fanfare" src="tusch.mp3" preload="auto"></audio>
@@ -103,7 +96,7 @@
         function startNewGame() {
             grid = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
             canMove = true;
-            document.getElementById('status').innerText = "Du bist dran!";
+            document.getElementById('status').innerText = "Du bist am Zug!";
             document.querySelectorAll('.confetti').forEach(c => c.remove());
             render();
         }
@@ -137,74 +130,4 @@
                 canMove = false;
             } else {
                 canMove = false;
-                document.getElementById('status').innerText = "Pimpinelly überlegt...";
-                setTimeout(ai, 600);
-            }
-        }
-
-        function ai() {
-            let move = -1;
-            // 1. Pimpinelly gewinnt sofort, wenn möglich
-            for(let c=0; c<COLS; c++) {
-                let r = getR(c);
-                if(r!=-1) { grid[r][c]=2; if(check(r,c,2)) move=c; grid[r][c]=0; if(move!=-1) break; }
-            }
-            // 2. Spieler blocken (jetzt viel früher!)
-            if(move == -1) {
-                for(let c=0; c<COLS; c++) {
-                    let r = getR(c);
-                    if(r!=-1) { grid[r][c]=1; if(check(r,c,1)) move=c; grid[r][c]=0; if(move!=-1) break; }
-                }
-            }
-            // 3. Strategische Blockade: Verhindere 2er-Ketten am Boden
-            if(move == -1) {
-                for(let c=0; c<COLS; c++) {
-                    let r = getR(c);
-                    if(r == 5) { // Unterste Reihe
-                        if((c<COLS-1 && grid[5][c+1]===1) || (c>0 && grid[5][c-1]===1)) { move=c; break; }
-                    }
-                }
-            }
-            // 4. Wenn nichts hilft: Mitte bevorzugen
-            if(move == -1) move = [3,2,4,1,5,0,6].find(c => getR(c)!=-1);
-            
-            let finalR = getR(move);
-            grid[finalR][move] = 2;
-            render();
-            if (check(finalR, move, 2)) document.getElementById('status').innerText = "Pimpinelly gewinnt! 🤡";
-            else { canMove = true; document.getElementById('status').innerText = "Du bist dran!"; }
-        }
-
-        function launchConfetti() {
-            const colors = ['#ff9800', '#ffeb3b', '#ff0000', '#0044cc', '#00ff00'];
-            for (let i = 0; i < 70; i++) {
-                const conf = document.createElement('div');
-                conf.className = 'confetti';
-                conf.style.left = Math.random() * 100 + 'vw';
-                conf.style.backgroundColor = colors[Math.floor(Math.random()*colors.length)];
-                conf.style.animationDuration = (Math.random() * 2 + 1.5) + 's';
-                document.body.appendChild(conf);
-            }
-        }
-
-        function getR(c) { for(let i=ROWS-1; i>=0; i--) if(grid[i][c]===0) return i; return -1; }
-        function check(r, c, p) {
-            const directions = [[0,1],[1,0],[1,1],[1,-1]];
-            for (let [dr, dc] of directions) {
-                let count = 1;
-                for (let i = 1; i < 4; i++) {
-                    let nr = r + dr*i, nc = c + dc*i;
-                    if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS && grid[nr][nc] === p) count++; else break;
-                }
-                for (let i = 1; i < 4; i++) {
-                    let nr = r - dr*i, nc = c - dc*i;
-                    if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS && grid[nr][nc] === p) count++; else break;
-                }
-                if (count >= 4) return true;
-            }
-            return false;
-        }
-        startNewGame();
-    </script>
-</body>
-</html>
+                document.getElementById('status').innerText = "Pimpinelly spielt
