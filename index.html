@@ -5,12 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Pimpinelly 4-Gewinnt</title>
     <style>
-        body { font-family: Arial, sans-serif; background: #ffffff; margin: 0; padding: 10px; text-align: center; }
+        body { font-family: Arial, sans-serif; background: #ffffff; margin: 0; padding: 10px; text-align: center; overflow-x: hidden; }
         .logo { width: 60px; height: auto; margin-top: 10px; }
         h1 { color: #0044cc; margin: 5px 0; font-size: 1.4rem; }
         .sub { font-size: 1.1rem; color: #333; margin-bottom: 15px; font-weight: bold; display: block; }
 
-        /* Der Kasten um das Spiel - FESTE GRÖSSE */
         .wrapper {
             background-color: #222;
             padding: 10px;
@@ -20,10 +19,8 @@
             height: 275px;
             margin: 0 auto;
             display: block;
-            box-sizing: content-box;
         }
 
-        /* Das blaue Feld - FESTE GRÖSSE */
         .board { 
             background-color: #0044cc; 
             width: 308px;
@@ -32,7 +29,6 @@
             border-radius: 8px;
         }
 
-        /* Die Löcher - FESTE GRÖSSE */
         .cell { 
             width: 38px; 
             height: 38px; 
@@ -40,13 +36,13 @@
             border-radius: 50%; 
             cursor: pointer;
             display: block;
+            transition: background 0.2s;
         }
 
-        /* Spielsteine */
-        .p1 { background-color: #ff9800 !important; }
-        .p2 { background-color: #ffeb3b !important; }
+        .p1 { background-color: #ff9800 !important; } /* Spieler Orange */
+        .p2 { background-color: #ffeb3b !important; } /* Pimpinelly Gelb */
 
-        #status { font-weight: bold; margin: 15px 0; font-size: 1.1rem; min-height: 1.5em; }
+        #status { font-weight: bold; margin: 15px 0; font-size: 1.1rem; min-height: 1.5em; color: #333; }
         .reset-btn { background: #ff9800; color: #000; border: none; padding: 12px 30px; font-size: 1.1rem; font-weight: bold; border-radius: 50px; cursor: pointer; }
         
         .confetti { position: fixed; width: 8px; height: 8px; top: -10px; z-index: 999; pointer-events: none; animation: fall linear forwards; }
@@ -75,18 +71,26 @@
         </table>
     </div>
 
-    <div id="status">Warte auf Start...</div>
+    <div id="status">Manege wird aufgebaut...</div>
     <button class="reset-btn" onclick="resetGame()">Neues Spiel</button>
 
     <audio id="tusch" src="tusch.mp3" preload="auto"></audio>
 
     <script>
         const R = 6, C = 7;
-        let grid = Array.from({length: R}, () => Array(C).fill(0));
-        let active = true;
+        let grid = [];
+        let active = false;
+
+        // Initialisiert das Gitter
+        function initGrid() {
+            grid = [];
+            for(let i=0; i<R; i++) {
+                grid.push(new Array(C).fill(0));
+            }
+        }
 
         function resetGame() {
-            grid = Array.from({length: R}, () => Array(C).fill(0));
+            initGrid();
             active = true;
             document.getElementById('status').innerText = "Du bist am Zug!";
             document.querySelectorAll('.confetti').forEach(n => n.remove());
@@ -108,8 +112,7 @@
 
         function play(c) {
             if (!active) return;
-            let r = -1;
-            for (let i = R-1; i >= 0; i--) { if (grid[i][c] === 0) { r = i; break; } }
+            let r = getR(c);
             if (r === -1) return;
 
             grid[r][c] = 1;
@@ -129,17 +132,19 @@
 
         function cpu() {
             let move = -1;
-            // Pimpinelly Logik
+            // 1. Pimpinelly gewinnt sofort
             for(let c=0; c<C; c++) {
                 let r = getR(c);
                 if(r!=-1) { grid[r][c]=2; if(check(r,c,2)) move=c; grid[r][c]=0; if(move!=-1) break; }
             }
+            // 2. Blocken
             if(move == -1) {
                 for(let c=0; c<C; c++) {
                     let r = getR(c);
                     if(r!=-1) { grid[r][c]=1; if(check(r,c,1)) move=c; grid[r][c]=0; if(move!=-1) break; }
                 }
             }
+            // 3. Strategie
             if(move == -1) move = [3,2,4,1,5,0,6].find(c => getR(c)!=-1);
             
             let rFinal = getR(move);
@@ -150,3 +155,46 @@
                 else { active = true; document.getElementById('status').innerText = "Du bist dran!"; }
             }
         }
+
+        function rain() {
+            for (let i = 0; i < 60; i++) {
+                const d = document.createElement('div');
+                d.className = 'confetti';
+                d.style.left = Math.random() * 100 + 'vw';
+                d.style.backgroundColor = ['#ff9800','#ffeb3b','#ff0000','#0044cc'][Math.floor(Math.random()*4)];
+                d.style.animationDuration = (Math.random()*2+1.5)+'s';
+                document.body.appendChild(d);
+            }
+        }
+
+        function getR(c) { 
+            for(let i=R-1; i>=0; i--) {
+                if(grid[i] && grid[i][c] === 0) return i;
+            }
+            return -1; 
+        }
+
+        function check(r, c, p) {
+            const dirs = [[0,1],[1,0],[1,1],[1,-1]];
+            for (let [dr, dc] of dirs) {
+                let count = 1;
+                for (let i = 1; i < 4; i++) {
+                    let nr = r + dr*i, nc = c + dc*i;
+                    if (nr >= 0 && nr < R && nc >= 0 && nc < C && grid[nr][nc] === p) count++; else break;
+                }
+                for (let i = 1; i < 4; i++) {
+                    let nr = r - dr*i, nc = c - dc*i;
+                    if (nr >= 0 && nr < R && nc >= 0 && nc < C && grid[nr][nc] === p) count++; else break;
+                }
+                if (count >= 4) return true;
+            }
+            return false;
+        }
+
+        // Startet das Spiel automatisch nach einer kurzen Pause
+        window.onload = function() {
+            setTimeout(resetGame, 500);
+        };
+    </script>
+</body>
+</html>
