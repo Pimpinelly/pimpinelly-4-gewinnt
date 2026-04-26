@@ -7,8 +7,10 @@
     <meta name="apple-mobile-web-app-title" content="Pimpinelly">
     <title>Pimpinelly 4-Gewinnt</title>
 
-    <link rel="apple-touch-icon" href="desktopbutton.jpg">
-    <link rel="icon" type="image/jpeg" href="desktopbutton.jpg">
+    <link rel="apple-touch-icon" href="icon.png?v=2">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon.png?v=2">
+    <link rel="icon" type="image/png" sizes="512x512" href="icon.png?v=2">
+    <link rel="shortcut icon" href="icon.png?v=2">
 
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -18,20 +20,13 @@
         .logo { width: 45px; height: auto; }
         h1 { font-size: 1.1rem; margin: 2px 0; color: #0044cc; }
         .sub { font-size: 0.9rem; font-weight: bold; margin-bottom: 5px; display: block; }
-
-        .wrapper {
-            background-color: #222; padding: 4px; border-radius: 8px;
-            display: inline-block; margin: 0 auto;
-        }
+        .wrapper { background-color: #222; padding: 4px; border-radius: 8px; display: inline-block; margin: 0 auto; }
         .board { background-color: #0044cc; border-spacing: 2px; border-radius: 5px; }
         .cell { width: 30px; height: 30px; background-color: #ffffff; border-radius: 50%; display: block; cursor: pointer; }
-
         .p1 { background-color: #ff9800 !important; }
         .p2 { background-color: #ffeb3b !important; }
-
         #status { font-weight: bold; margin: 8px 0; font-size: 1rem; color: #333; min-height: 1.2em; }
         .reset-btn { background: #ff9800; border: none; padding: 8px 15px; font-weight: bold; border-radius: 20px; cursor: pointer; }
-        
         .confetti { position: fixed; width: 6px; height: 6px; top: -10px; z-index: 999; animation: fall linear forwards; }
         @keyframes fall { to { transform: translateY(110vh); } }
     </style>
@@ -105,7 +100,6 @@
             if(move==-1) { for(let c=0; c<C; c++) { let r=getRow(c); if(r!=-1){ grid[r][c]=1; if(checkWin(r,c,1)) move=c; grid[r][c]=0; if(move!=-1)break;}}}
             if(move==-1) { for(let c=0; c<C; c++) { if(getRow(c)==5 && ((c<C-1 && grid[5][c+1]==1)||(c>0 && grid[5][c-1]==1))) {move=c; break;}}}
             if(move==-1) move = [3,2,4,1,5,0,6].find(c => getRow(c)!=-1);
-            
             let rf = getRow(move);
             if(rf!=-1) {
                 grid[rf][move]=2; updateVisuals();
@@ -149,7 +143,6 @@
                 document.body.appendChild(d);
             }
         }
-
         resetGame();
     </script>
 </body>
