@@ -2,111 +2,106 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Pimpinellys 4-Gewinnt</title>
     <style>
-        body { font-family: sans-serif; background: #ffffff; text-align: center; padding: 10px; margin: 0; overflow: hidden; }
-        .logo-img { width: 80px; height: auto; display: block; margin: 5px auto; }
-        h1 { color: #0044cc; margin: 5px 0; font-size: 1.8rem; }
-        
-        /* Absolut fester Container für das Spiel */
-        .wrapper {
-            display: inline-block;
-            background: #222;
-            padding: 12px;
-            border-radius: 15px;
-            border: 5px solid #444;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            position: relative;
-            z-index: 5;
+        /* Verhindert das Hin- und Her-Schwimmen auf dem Handy */
+        html, body { 
+            position: fixed; 
+            width: 100%; 
+            height: 100%; 
+            overflow: hidden; 
+            touch-action: none; 
+            font-family: sans-serif; 
+            background: #ffffff; 
+            margin: 0; padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
-        /* Spielfeld mit festen Maßen (7 Spalten x 48px = ca. 340px) */
+        .logo-img { width: 70px; height: auto; margin-top: 10px; }
+        h1 { color: #0044cc; margin: 5px 0; font-size: 1.5rem; }
+        p { margin: 0 0 10px 0; font-size: 0.9rem; color: #666; }
+
+        /* Fester Gehäuse-Block */
+        .wrapper {
+            background: #222;
+            padding: 10px;
+            border-radius: 15px;
+            border: 4px solid #444;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            position: relative;
+        }
+
+        /* Das Spielfeld - Geschlossen gegen weiße Streifen */
         .board { 
             background-color: #0044cc; 
-            padding: 8px; 
-            border-radius: 8px; 
-            display: table; 
+            border-spacing: 0;
+            border-collapse: collapse;
             margin: 0 auto;
-            border-spacing: 6px;
+            line-height: 0;
         }
 
-        .row { display: table-row; }
-        
-        /* Zellen mit fixierter Größe - Darf nicht gestaucht werden! */
         .cell {
-            display: table-cell;
-            width: 42px !important;
-            height: 42px !important;
-            min-width: 42px;
-            min-height: 42px;
+            width: 42px;
+            height: 42px;
+            background: #0044cc;
+            padding: 4px;
+        }
+
+        /* Das Loch im Stein */
+        .hole {
+            width: 42px;
+            height: 42px;
             background: #ffffff;
             border-radius: 50%;
-            cursor: pointer;
             box-shadow: inset 2px 2px 5px rgba(0,0,0,0.2);
+            display: block;
         }
 
-        .p1 { background: #ff9800 !important; } /* Spieler Orange */
-        .p2 { background: #ffeb3b !important; } /* Pimpinelly Gelb */
+        .p1 .hole { background: #ff9800 !important; }
+        .p2 .hole { background: #ffeb3b !important; }
 
-        #status { font-weight: bold; margin: 10px 0; font-size: 1.2rem; min-height: 1.5em; color: #333; }
+        #status { font-weight: bold; margin: 10px 0; font-size: 1.1rem; height: 1.5em; }
         
         .reset-btn {
-            background: #ff9800;
-            color: #000;
-            border: none;
-            padding: 12px 30px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            border-radius: 50px;
-            cursor: pointer;
-            margin-bottom: 10px;
+            background: #ff9800; color: #000; border: none; 
+            padding: 10px 25px; font-size: 1rem; font-weight: bold;
+            border-radius: 50px; cursor: pointer;
         }
 
-        /* Konfetti: Absolut positioniert, stört das Layout nicht */
         .confetti {
-            position: absolute;
-            width: 8px;
-            height: 8px;
-            top: -10px;
-            z-index: 100;
-            pointer-events: none; /* Man kann durch das Konfetti klicken */
-            animation: fall linear forwards;
+            position: absolute; width: 6px; height: 6px; top: -10px;
+            z-index: 100; pointer-events: none; animation: fall linear forwards;
         }
-
-        @keyframes fall {
-            to { transform: translateY(110vh) rotate(360deg); }
-        }
+        @keyframes fall { to { transform: translateY(110vh) rotate(360deg); } }
     </style>
 </head>
 <body>
 
     <img src="logo.png" alt="Pimpinelly" class="logo-img">
     <h1>Pimpinellys 4-Gewinnt</h1>
-    <p style="margin:0 0 10px 0;">Du spielst heute gegen Pimpinelly</p>
+    <p>Du gegen Pimpinelly</p>
 
-    <div class="wrapper" id="main-wrapper">
-        <div id="game-board" class="board"></div>
+    <div class="wrapper">
+        <table id="game-board" class="board"></table>
     </div>
 
-    <div id="status">Lade Manege...</div>
+    <div id="status">Du bist dran!</div>
     <button class="reset-btn" onclick="startNewGame()">Neues Spiel</button>
 
     <audio id="fanfare" src="tusch.mp3" preload="auto"></audio>
 
     <script>
-        const ROWS = 6;
-        const COLS = 7;
-        let grid = [];
-        let canMove = true;
+        const ROWS = 6, COLS = 7;
+        let grid = [], canMove = true;
 
         function startNewGame() {
             grid = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
             canMove = true;
             document.getElementById('status').innerText = "Du bist dran!";
-            // Altes Konfetti entfernen
-            const old = document.querySelectorAll('.confetti');
-            old.forEach(c => c.remove());
+            document.querySelectorAll('.confetti').forEach(c => c.remove());
             render();
         }
 
@@ -114,31 +109,24 @@
             const boardEl = document.getElementById('game-board');
             boardEl.innerHTML = '';
             for (let r = 0; r < ROWS; r++) {
-                const rowDiv = document.createElement('div');
-                rowDiv.className = 'row';
+                const tr = document.createElement('tr');
                 for (let c = 0; c < COLS; c++) {
-                    const cellDiv = document.createElement('div');
-                    cellDiv.className = 'cell';
-                    if (grid[r][c] === 1) cellDiv.classList.add('p1');
-                    if (grid[r][c] === 2) cellDiv.classList.add('p2');
-                    cellDiv.onclick = () => makeMove(c);
-                    rowDiv.appendChild(cellDiv);
+                    const td = document.createElement('td');
+                    td.className = 'cell' + (grid[r][c] === 1 ? ' p1' : grid[r][c] === 2 ? ' p2' : '');
+                    td.innerHTML = '<div class="hole"></div>';
+                    td.onclick = () => makeMove(c);
+                    tr.appendChild(td);
                 }
-                boardEl.appendChild(rowDiv);
+                boardEl.appendChild(tr);
             }
         }
 
         function makeMove(c) {
             if (!canMove) return;
-            let r = -1;
-            for (let i = ROWS - 1; i >= 0; i--) {
-                if (grid[i][c] === 0) { r = i; break; }
-            }
+            let r = getR(c);
             if (r === -1) return;
-
             grid[r][c] = 1;
             render();
-
             if (check(r, c, 1)) {
                 document.getElementById('status').innerText = "Sieg! 🎉";
                 document.getElementById('fanfare').play().catch(() => {});
@@ -151,54 +139,50 @@
             }
         }
 
+        function ai() {
+            let move = -1;
+            // 1. Kann Pimpinelly gewinnen?
+            for(let c=0; c<COLS; c++) {
+                let r = getR(c);
+                if(r!=-1) { grid[r][c]=2; if(check(r,c,2)) move=c; grid[r][c]=0; if(move!=-1) break; }
+            }
+            // 2. Muss er Spieler blocken? (Inklusive Boden-Check)
+            if(move == -1) {
+                for(let c=0; c<COLS; c++) {
+                    let r = getR(c);
+                    if(r!=-1) { grid[r][c]=1; if(check(r,c,1)) move=c; grid[r][c]=0; if(move!=-1) break; }
+                }
+            }
+            // 3. Verhindere Boden-Reihen (Horizontale Prävention)
+            if(move == -1) {
+                for(let c=0; c<COLS-1; c++) {
+                    if(grid[5][c] === 1 && grid[5][c+1] === 1) {
+                        if(getR(c+2)===5) move = c+2;
+                        else if(getR(c-1)===5) move = c-1;
+                    }
+                }
+            }
+            if(move == -1 || getR(move) == -1) move = [3,2,4,1,5,0,6].find(c => getR(c)!=-1);
+            
+            let finalR = getR(move);
+            grid[finalR][move] = 2;
+            render();
+            if (check(finalR, move, 2)) document.getElementById('status').innerText = "Pimpinelly gewinnt! 🤡";
+            else { canMove = true; document.getElementById('status').innerText = "Du bist dran!"; }
+        }
+
         function launchConfetti() {
-            const colors = ['#ff9800', '#ffeb3b', '#ff0000', '#00ff00', '#0044cc', '#ff00ff'];
-            for (let i = 0; i < 80; i++) {
+            for (let i = 0; i < 60; i++) {
                 const conf = document.createElement('div');
                 conf.className = 'confetti';
                 conf.style.left = Math.random() * 100 + 'vw';
-                conf.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                conf.style.animationDuration = (Math.random() * 3 + 2) + 's';
-                conf.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+                conf.style.backgroundColor = ['#ff9800', '#ffeb3b', '#ff0000', '#0044cc'][Math.floor(Math.random()*4)];
+                conf.style.animationDuration = (Math.random() * 2 + 2) + 's';
                 document.body.appendChild(conf);
             }
         }
 
-        function ai() {
-            let move = -1;
-            // Pimpinelly Strategie (Sieg/Block/Zentrum)
-            for(let c=0; c<COLS; c++) {
-                let r = getR(c);
-                if(r != -1) { grid[r][c]=2; if(check(r,c,2)) move=c; grid[r][c]=0; }
-            }
-            if(move == -1) {
-                for(let c=0; c<COLS; c++) {
-                    let r = getR(c);
-                    if(r != -1) { grid[r][c]=1; if(check(r,c,1)) move=c; grid[r][c]=0; }
-                }
-            }
-            if(move == -1) move = 3;
-            if(getR(move) == -1) {
-                for(let i=0; i<COLS; i++) if(getR(i)!=-1) move=i;
-            }
-
-            let finalR = getR(move);
-            grid[finalR][move] = 2;
-            render();
-
-            if (check(finalR, move, 2)) {
-                document.getElementById('status').innerText = "Pimpinelly gewinnt! 🤡";
-            } else {
-                canMove = true;
-                document.getElementById('status').innerText = "Du bist dran!";
-            }
-        }
-
-        function getR(c) {
-            for(let i=ROWS-1; i>=0; i--) if(grid[i][c]===0) return i;
-            return -1;
-        }
-
+        function getR(c) { for(let i=ROWS-1; i>=0; i--) if(grid[i][c]===0) return i; return -1; }
         function check(r, c, p) {
             const directions = [[0,1],[1,0],[1,1],[1,-1]];
             for (let [dr, dc] of directions) {
@@ -215,7 +199,6 @@
             }
             return false;
         }
-
         startNewGame();
     </script>
 </body>
