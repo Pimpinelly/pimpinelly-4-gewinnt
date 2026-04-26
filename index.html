@@ -3,79 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pimpinellys 4-Gewinnt</title>
+    <title>Pimpinellys 4-Gewinnt - Professional</title>
     <style>
-        /* Grunddesign */
+        :root {
+            --board-blue: #0055ff;
+            --board-border: #0033aa;
+            --player-color: orange;
+            --ai-color: yellow;
+            --bg-color: #f8f9fa;
+        }
+
         body { 
-            font-family: Arial, sans-serif; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
             text-align: center; 
-            background-color: #f0f0f0; 
-            margin: 0; padding: 10px;
+            background-color: var(--bg-color); 
+            margin: 0; padding: 20px;
             touch-action: manipulation;
         }
-        h1 { font-size: 1.8rem; margin-bottom: 5px; color: #333; }
-        .info { font-style: italic; color: #555; margin-bottom: 10px; }
 
-        /* Die blinkende Zirkus-Lichterkette */
+        h1 { color: #222; margin-bottom: 5px; font-weight: 800; }
+        .info { font-style: italic; color: #666; margin-bottom: 20px; }
+
         .board-container {
             display: inline-block;
-            padding: 12px;
+            padding: 15px;
             background-color: #222; 
             border-radius: 20px;
-            margin: 5px auto;
-            position: relative;
-            animation: circusLights 0.8s linear infinite;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            animation: circusLights 1.5s linear infinite;
         }
 
-        /* Das blaue Spielfeld - WICHTIG: Grid muss 7 Spalten haben */
+        /* Das Spielfeld mit festem Grid gegen den "Balken-Effekt" */
         .board { 
             display: grid; 
-            grid-template-columns: repeat(7, 1fr); 
-            grid-gap: 5px; 
-            background-color: #0055ff; 
-            padding: 10px; 
+            grid-template-columns: repeat(7, 50px); 
+            grid-template-rows: repeat(6, 50px); 
+            grid-gap: 8px; 
+            background-color: var(--board-blue); 
+            padding: 12px; 
             border-radius: 10px; 
-            width: 320px; 
-            max-width: 90vw; 
-            border: 4px solid #0033aa;
+            border: 4px solid var(--board-border);
         }
-        
-        /* Die weißen Löcher/Steine */
+
+        @media (max-width: 450px) {
+            .board {
+                grid-template-columns: repeat(7, 11vw);
+                grid-template-rows: repeat(6, 11vw);
+                grid-gap: 5px;
+            }
+        }
+
         .cell { 
-            aspect-ratio: 1 / 1; 
             background-color: white; 
             border-radius: 50%; 
             cursor: pointer; 
-            box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+            box-shadow: inset 2px 2px 5px rgba(0,0,0,0.2);
+            transition: background 0.3s ease;
         }
         
-        /* Steinfarben */
-        .cell.player { background-color: orange; box-shadow: inset 0 0 10px rgba(0,0,0,0.3); }
-        .cell.pimpinelly { background-color: yellow; box-shadow: inset 0 0 10px rgba(0,0,0,0.3); }
+        .cell.player { background-color: var(--player-color); box-shadow: inset 0 0 10px rgba(0,0,0,0.4); }
+        .cell.pimpinelly { background-color: var(--ai-color); box-shadow: inset 0 0 10px rgba(0,0,0,0.4); }
         
+        #status { margin-top: 20px; font-weight: bold; font-size: 1.4rem; color: #333; }
+
         button {
-            padding: 12px 25px; font-size: 1.1rem; cursor: pointer;
-            background-color: #333; color: white; border: none;
-            border-radius: 8px; margin-top: 15px;
+            margin-top: 25px; padding: 12px 35px; font-size: 1rem;
+            font-weight: bold; cursor: pointer; background-color: #222;
+            color: white; border: none; border-radius: 50px;
+            transition: transform 0.2s;
         }
+        button:active { transform: scale(0.95); }
 
         @keyframes circusLights {
-            0%, 100% { box-shadow: 0 0 12px 4px red, 0 0 20px 6px yellow; }
-            50% { box-shadow: 0 0 12px 4px yellow, 0 0 20px 6px red; }
+            0%, 100% { box-shadow: 0 0 15px 5px red, 0 0 25px 8px yellow; }
+            50% { box-shadow: 0 0 15px 5px yellow, 0 0 25px 8px red; }
         }
     </style>
 </head>
 <body>
 
     <h1>Pimpinellys 4-Gewinnt</h1>
-    <p class="info">Du spielst gegen den listigen Pimpinelly!</p>
+    <p class="info">Du spielst heute gegen Pimpinelly</p>
     
     <div class="board-container">
-        <div class="board" id="board"></div>
+        <div id="board" class="board"></div>
     </div>
     
-    <h2 id="status">Du bist dran!</h2>
-    <button onclick="resetGame()">Neu starten</button>
+    <div id="status">Du bist dran!</div>
+    <button onclick="resetGame()">Spiel Neustarten</button>
 
     <script>
         const ROWS = 6;
@@ -83,7 +98,6 @@
         let board = Array.from({ length: ROWS }, () => Array(COLUMNS).fill(0));
         let gameActive = true;
 
-        // Erzeugt das Spielfeld
         function createBoard() {
             const boardElement = document.getElementById('board');
             boardElement.innerHTML = '';
@@ -91,7 +105,7 @@
                 for (let c = 0; c < COLUMNS; c++) {
                     const cell = document.createElement('div');
                     cell.classList.add('cell');
-                    cell.dataset.row = r; cell.dataset.col = c;
+                    cell.id = `cell-${r}-${c}`;
                     cell.onclick = () => playerMove(c);
                     boardElement.appendChild(cell);
                 }
@@ -104,96 +118,76 @@
             if (r !== -1) {
                 placeStone(r, c, 1);
                 if (checkWin(r, c, 1)) {
-                    document.getElementById('status').innerText = "Sieg! 🎉";
+                    document.getElementById('status').innerText = "Gratulation! Du hast gewonnen! 🎉";
                     gameActive = false;
-                } else if (isDraw()) {
+                } else if (board.flat().every(v => v !== 0)) {
                     document.getElementById('status').innerText = "Unentschieden! 🤡";
                     gameActive = false;
                 } else {
                     document.getElementById('status').innerText = "Pimpinelly überlegt...";
-                    setTimeout(pimpinellyMove, 600);
+                    setTimeout(pimpinellyMove, 500);
                 }
             }
         }
 
         function pimpinellyMove() {
             if (!gameActive) return;
-            let move = calculateBestMove();
+            let move = getBestMove();
             let r = getLowestEmptyRow(move);
-            if (r !== -1) {
-                placeStone(r, move, 2);
-                if (checkWin(r, move, 2)) {
-                    document.getElementById('status').innerText = "Pimpinelly gewinnt! 🤡";
-                    gameActive = false;
-                } else if (isDraw()) {
-                    document.getElementById('status').innerText = "Unentschieden! 🤡";
-                    gameActive = false;
-                } else {
-                    document.getElementById('status').innerText = "Du bist dran!";
-                }
+            placeStone(r, move, 2);
+            if (checkWin(r, move, 2)) {
+                document.getElementById('status').innerText = "Pimpinelly gewinnt! 🤡";
+                gameActive = false;
+            } else {
+                document.getElementById('status').innerText = "Du bist dran!";
             }
         }
 
-        // --- SCHLAUE KI LOGIK ---
-        function calculateBestMove() {
-            let bestScore = -Infinity;
-            let bestMoves = [];
-
+        function getBestMove() {
+            // 1. Sofort gewinnen, wenn möglich
             for (let c = 0; c < COLUMNS; c++) {
                 let r = getLowestEmptyRow(c);
-                if (r === -1) continue;
-
-                // 1. Pimpinelly Sieg-Check
-                board[r][c] = 2;
-                if (checkWin(r, c, 2)) { board[r][c] = 0; return c; }
-                board[r][c] = 0;
-
-                // 2. Block-Check (Verhindert Spieler-Sieg)
-                board[r][c] = 1;
-                if (checkWin(r, c, 1)) { board[r][c] = 0; return c; }
-                board[r][c] = 0;
-
-                // 3. Strategie
-                let score = 0;
-                const centerWeights = [0, 2, 5, 20, 5, 2, 0];
-                score += centerWeights[c];
-
-                // Bedrohungserkennung (extrem starker Block gegen Reihen am Boden)
-                score += evaluateMovePotential(r, c, 1) * 35; 
-                score += evaluateMovePotential(r, c, 2) * 15;
-
-                // Anti-Vorlage (Setze nicht unter eine Gewinn-Möglichkeit)
-                if (r > 0) {
+                if (r !== -1) {
                     board[r][c] = 2;
-                    if (checkWin(r - 1, c, 1)) score -= 300;
+                    if (checkWin(r, c, 2)) { board[r][c] = 0; return c; }
                     board[r][c] = 0;
                 }
-
-                if (score > bestScore) {
-                    bestScore = score;
-                    bestMoves = [c];
-                } else if (score === bestScore) {
-                    bestMoves.push(c);
+            }
+            // 2. Spieler blockieren, wenn dieser gewinnen könnte
+            for (let c = 0; c < COLUMNS; c++) {
+                let r = getLowestEmptyRow(c);
+                if (r !== -1) {
+                    board[r][c] = 1;
+                    if (checkWin(r, c, 1)) { board[r][c] = 0; return c; }
+                    board[r][c] = 0;
                 }
             }
-            return bestMoves[Math.floor(Math.random() * bestMoves.length)];
-        }
-
-        function evaluateMovePotential(r, c, p) {
-            let totalPotential = 0;
-            const directions = [[0,1], [1,0], [1,1], [1,-1]];
-            for (let [dr, dc] of directions) {
-                let count = 0;
-                for (let i = -3; i <= 3; i++) {
-                    let nr = r + dr*i, nc = c + dc*i;
-                    if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLUMNS) {
-                        if (board[nr][nc] === p || (nr === r && nc === c)) count++;
-                        else if (board[nr][nc] !== 0) count = 0; 
+            // 3. Vorlagen-Vermeidung & Zentrum
+            let bestC = -1;
+            let bestScore = -1000;
+            const order = [3, 2, 4, 1, 5, 0, 6];
+            
+            for (let c of order) {
+                let r = getLowestEmptyRow(c);
+                if (r !== -1) {
+                    let score = (c === 3) ? 10 : (c >= 2 && c <= 4) ? 5 : 0;
+                    
+                    // Prüfen: Legen wir dem Spieler einen Sieg auf?
+                    if (r > 0) {
+                        board[r][c] = 2;
+                        board[r-1][c] = 1;
+                        if (checkWin(r-1, c, 1)) score -= 100;
+                        board[r-1][c] = 0;
+                        board[r][c] = 0;
                     }
-                    if (count >= 4) totalPotential++;
+                    
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestC = c;
+                    }
                 }
             }
-            return totalPotential;
+            return bestC;
         }
 
         function getLowestEmptyRow(c) {
@@ -203,11 +197,9 @@
             return -1;
         }
 
-        function isDraw() { return board[0].every(cell => cell !== 0); }
-
         function placeStone(r, c, p) {
             board[r][c] = p;
-            const cell = document.querySelector(`[data-row='${r}'][data-col='${c}']`);
+            const cell = document.getElementById(`cell-${r}-${c}`);
             cell.classList.add(p === 1 ? 'player' : 'pimpinelly');
         }
 
@@ -229,13 +221,3 @@
         }
 
         function resetGame() {
-            board = Array.from({ length: ROWS }, () => Array(COLUMNS).fill(0));
-            gameActive = true;
-            document.getElementById('status').innerText = "Du bist dran!";
-            createBoard();
-        }
-
-        createBoard();
-    </script>
-</body>
-</html>
