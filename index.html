@@ -3,27 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pimpinellys Profi-Challenge</title>
+    <title>Pimpinellys 4-Gewinnt</title>
     <style>
         :root {
-            --bg: #1a1a1a;
+            --bg: #fdfdfd;
             --board: #0044cc;
             --player: #ff9800;
             --pimpinelly: #ffeb3b;
         }
-        body { font-family: 'Segoe UI', sans-serif; background: #f0f0f0; text-align: center; margin: 0; padding: 20px; }
-        h1 { margin-bottom: 5px; color: #333; }
-        .sub { font-style: italic; color: #666; margin-bottom: 20px; display: block; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); text-align: center; margin: 0; padding: 10px; }
+        
+        /* Das Clown-Logo dezent oben */
+        .logo { width: 80px; height: auto; margin-top: 10px; opacity: 0.9; }
 
-        /* Stabiles Board-Design */
-        .game-area {
+        h1 { margin: 5px 0; color: var(--board); font-size: 2rem; font-weight: 800; }
+        .sub { font-style: italic; color: #666; margin-bottom: 15px; display: block; }
+
+        /* Der Rahmen mit bunten blinkenden Lichtern */
+        .lights-border {
             display: inline-block;
-            background: #333;
-            padding: 15px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            border: 4px solid #444;
+            padding: 12px;
+            border-radius: 25px;
+            background: #222;
+            position: relative;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            animation: rainbowLights 1.5s linear infinite;
         }
+
+        @keyframes rainbowLights {
+            0% { box-shadow: 0 0 20px red; border: 3px solid #ff0000; }
+            33% { box-shadow: 0 0 20px lime; border: 3px solid #00ff00; }
+            66% { box-shadow: 0 0 20px cyan; border: 3px solid #0000ff; }
+            100% { box-shadow: 0 0 20px red; border: 3px solid #ff0000; }
+        }
+
         .grid { 
             display: grid; 
             grid-template-columns: repeat(7, 45px); 
@@ -31,45 +44,49 @@
             grid-gap: 8px; 
             background: var(--board); 
             padding: 12px; 
-            border-radius: 8px;
+            border-radius: 12px;
         }
+
         .slot { 
             width: 45px; height: 45px; background: white; 
             border-radius: 50%; cursor: pointer;
             box-shadow: inset 2px 2px 5px rgba(0,0,0,0.2);
-            transition: transform 0.1s;
+            transition: background 0.2s ease;
         }
-        .slot:hover { transform: scale(1.05); }
 
-        /* Steine */
         .slot.p1 { background: var(--player); box-shadow: inset 0 0 10px rgba(0,0,0,0.4); }
         .slot.p2 { background: var(--pimpinelly); box-shadow: inset 0 0 10px rgba(0,0,0,0.4); }
 
-        #status { margin-top: 20px; font-size: 1.3rem; font-weight: bold; color: #222; min-height: 1.5em; }
+        #status { margin-top: 15px; font-size: 1.2rem; font-weight: bold; color: #333; min-height: 1.5em; }
+        
+        /* Button in Orange/Schwarz-Style */
         button {
-            margin-top: 20px; padding: 12px 30px; font-size: 1rem;
-            background: #222; color: white; border: none; border-radius: 50px;
-            cursor: pointer; font-weight: bold;
+            margin-top: 20px; padding: 12px 35px; font-size: 1.1rem;
+            background: var(--player); color: #000; border: none; border-radius: 50px;
+            cursor: pointer; font-weight: bold; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
-        button:hover { background: #444; }
+        button:hover { background: #fb8c00; transform: scale(1.03); }
 
         @media (max-width: 400px) {
-            .grid { grid-template-columns: repeat(7, 35px); grid-template-rows: repeat(6, 35px); grid-gap: 5px; }
-            .slot { width: 35px; height: 35px; }
+            .grid { grid-template-columns: repeat(7, 36px); grid-template-rows: repeat(6, 36px); grid-gap: 6px; }
+            .slot { width: 36px; height: 36px; }
         }
     </style>
 </head>
 <body>
 
+    <img src="logo.png" alt="Pimpinelly" class="logo">
     <h1>Pimpinellys 4-Gewinnt</h1>
     <span class="sub">Du spielst heute gegen Pimpinelly</span>
 
-    <div class="game-area">
+    <div class="lights-border">
         <div id="board" class="grid"></div>
     </div>
 
     <div id="status">Du bist dran!</div>
     <button onclick="reset()">Neues Spiel</button>
+
+    <audio id="winSound" src="tusch.mp3" preload="auto"></audio>
 
     <script>
         const R = 6, C = 7;
@@ -83,82 +100,4 @@
                 for(let c=0; c<C; c++) {
                     const s = document.createElement('div');
                     s.className = 'slot' + (field[r][c] ? ' p'+field[r][c] : '');
-                    s.onclick = () => drop(c);
-                    b.appendChild(s);
-                }
-            }
-        }
-
-        function drop(c) {
-            if(!active) return;
-            let r = getR(c);
-            if(r < 0) return;
-            
-            field[r][c] = 1;
-            if(win(r, c, 1)) { finish("Sieg! Du hast gewonnen! 🎉"); return; }
-            
-            active = false;
-            document.getElementById('status').innerText = "Pimpinelly denkt nach...";
-            setTimeout(ai, 500);
-            draw();
-        }
-
-        function ai() {
-            let bestC = -1, bestV = -Infinity;
-            let moves = [3, 2, 4, 1, 5, 0, 6].filter(c => getR(c) >= 0);
-
-            for(let c of moves) {
-                let r = getR(c);
-                let val = rate(r, c);
-                
-                // Sofort-Sieg oder MUSS-Blockade
-                field[r][c] = 2; if(win(r,c,2)) { field[r][c]=0; bestC=c; break; }
-                field[r][c] = 1; if(win(r,c,1)) { field[r][c]=0; val += 1000; }
-                field[r][c] = 0;
-
-                if(val > bestV) { bestV = val; bestC = c; }
-            }
-
-            let finalR = getR(bestC);
-            field[finalR][bestC] = 2;
-            if(win(finalR, bestC, 2)) { finish("Pimpinelly gewinnt! 🤡"); }
-            else { active = true; document.getElementById('status').innerText = "Du bist dran!"; }
-            draw();
-        }
-
-        function rate(r, c) {
-            let score = 0;
-            if(c === 3) score += 10; // Mitte
-            // Prüfe auf "Boden-Reihen" (Horizontaler Scan)
-            let count = 0;
-            for(let i=Math.max(0, c-2); i<=Math.min(C-1, c+2); i++) {
-                if(field[r][i] === 1) score += 15;
-            }
-            // Vorlagen-Check (nicht unter einen Sieg des Gegners setzen)
-            if(r > 0) {
-                field[r][c] = 2;
-                if(win(r-1, c, 1)) score -= 500;
-                field[r][c] = 0;
-            }
-            return score;
-        }
-
-        function win(r, c, p) {
-            const d = [[0,1],[1,0],[1,1],[1,-1]];
-            for(let [dr, dc] of d) {
-                let n = 1;
-                for(let i=1; i<4; i++) { let nr=r+dr*i, nc=c+dc*i; if(nr>=0 && nr<R && nc>=0 && nc<C && field[nr][nc]===p) n++; else break; }
-                for(let i=1; i<4; i++) { let nr=r-dr*i, nc=c-dc*i; if(nr>=0 && nr<R && nc>=0 && nc<C && field[nr][nc]===p) n++; else break; }
-                if(n >= 4) return true;
-            }
-            return false;
-        }
-
-        function getR(c) { for(let r=R-1; r>=0; r--) if(field[r][c]===0) return r; return -1; }
-        function finish(m) { document.getElementById('status').innerText = m; active = false; draw(); }
-        function reset() { field = Array.from({length: R}, () => Array(C).fill(0)); active = true; document.getElementById('status').innerText = "Du bist dran!"; draw(); }
-
-        draw();
-    </script>
-</body>
-</html>
+                    s.onclick = () => drop(
