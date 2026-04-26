@@ -100,8 +100,9 @@
             let rf = getRow(move);
             if(rf!=-1) {
                 grid[rf][move]=2; updateVisuals();
-                if(checkWin(rf, move, 2)) document.getElementById('status').innerText = "Pimpinelly hat 4! 🤡";
-                else { active=true; document.getElementById('status').innerText = "Du bist dran!"; }
+                if(checkWin(rf, move, 2)) {
+                    document.getElementById('status').innerText = "Pimpinelly hat gewonnen";
+                } else { active=true; document.getElementById('status').innerText = "Du bist dran!"; }
             }
         }
 
@@ -126,9 +127,7 @@
 
         function playTusch() {
             let sound = document.getElementById('audioTusch');
-            if(sound) {
-                sound.play().catch(e => console.log("Sound braucht Klick"));
-            }
+            if(sound) { sound.play().catch(e => {}); }
         }
 
         function rain() {
